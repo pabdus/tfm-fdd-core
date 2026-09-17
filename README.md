@@ -63,7 +63,7 @@ prueba = data.values(data.load_classic(1, "test"))
 t2, spe = modelo.score(prueba)
 
 print(metrics.evaluate_run(t2, modelo.t2_limit_, onset=data.FAULT_ONSET_TEST))
-# {'far': 0.0, 'fdr': 0.99, 'delay_samples': 3, 'delay_minutes': 9.0, 'detected': True}
+# {'far': 0.0, 'fdr': 0.994, 'delay_samples': 6, 'delay_minutes': 18.0, 'detected': True}
 ```
 
 Para los otros dos bloques, lo que interesa sobre todo es `data` (para cargar igual que yo) y `metrics` (para medir igual que yo):
