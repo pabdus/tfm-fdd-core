@@ -1,0 +1,29 @@
+# Configuracion del protocolo comun. Los tres bloques del TFM parten de aqui.
+# Cualquier cambio en este fichero es un evento de coordinacion: se anuncia en la
+# reunion del lunes y los tres recalculan los resultados afectados.
+
+protocolo:
+  alpha: 0.99              # nivel de confianza de los limites de control
+  alpha_sensibilidad: 0.95 # segundo nivel, para el analisis de sensibilidad
+  k_alarmas: 3             # alarmas consecutivas para confirmar deteccion
+  sample_minutes: 3.0      # minutos entre muestras en el TEP
+  semilla: 42
+
+particion:
+  fraccion_ajuste: 0.6
+  fraccion_validacion: 0.2
+  fraccion_prueba: 0.2
+  calibracion_limites: 0.3  # parte de los datos normales reservada para calibrar
+
+datos:
+  fuente: classic           # classic | rieth
+  runs_desarrollo: 20
+  runs_finales: 100
+  fault_onset_test: 160
+
+pca:
+  variance: 0.85
+  spe_method: box           # box | jackson | kde | empirical
+  lags: 0                   # 0 = PCA, 1 o 2 = DPCA
+
+fallos_dificiles: [3, 9, 15]  # se reportan siempre por separado
