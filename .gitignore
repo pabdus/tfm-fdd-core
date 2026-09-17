@@ -1,0 +1,28 @@
+# Datos: nunca van al repositorio. Lo que va es el script que los descarga.
+data/
+*.RData
+*.parquet
+*.dat
+
+# Resultados pesados. Los resumenes SI se versionan (ver results/summary/).
+results/raw/
+results/figures/*.png
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# La memoria vive en la carpeta compartida, no aqui.
+*.docx
+*.doc
+
+# Sistema
+.DS_Store
+Thumbs.db
