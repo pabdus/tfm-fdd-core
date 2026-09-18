@@ -21,10 +21,10 @@ El paquete existe para que los tres bloques carguen los datos igual, los partan 
 Para Jonathan y Cesar, que solo necesitan usar el paquete:
 
 ```bash
-pip install git+https://github.com/pabdus/tfm-fdd-core@v0.1
+pip install git+https://github.com/pabdus/tfm-fdd-core@v0.2
 ```
 
-Fijad siempre una **etiqueta de versión** (`@v0.1`), no la rama principal. Si apuntáis a la rama, un cambio mío altera vuestros resultados en silencio y las tablas de la memoria dejan de ser coherentes entre capítulos.
+Fijad siempre una **etiqueta de versión** (`@v0.2`), no la rama principal. Si apuntáis a la rama, un cambio mío altera vuestros resultados en silencio y las tablas de la memoria dejan de ser coherentes entre capítulos.
 
 Para trabajar sobre el propio repositorio:
 
@@ -77,6 +77,10 @@ y = df["faultNumber"].to_numpy()
 # ... aquí va vuestro clasificador o vuestra red ...
 ```
 
+## Empezar por los notebooks
+
+En `notebooks/` hay tres cuadernos comentados con sus salidas ya ejecutadas: uno general que recorre el flujo entero sobre el TEP clásico, y dos de arranque para los bloques de diagnóstico y de aprendizaje profundo. Son la forma más rápida de entender el paquete sin leer el código fuente. Ver `notebooks/README.md`.
+
 ## Reproducir el baseline
 
 ```bash
@@ -114,6 +118,7 @@ tfmfdd/
   stats.py          Wilcoxon pareado, corrección de Holm, tamaño de efecto
   plots.py          estilo gráfico único para toda la memoria
 experiments/        experimentos del bloque de detección
+notebooks/          tres cuadernos comentados con salidas ejecutadas
 configs/            parámetros del protocolo común
 tests/              20 pruebas; ejecutar con pytest -q
 docs/               registro de decisiones y actas de reunión
