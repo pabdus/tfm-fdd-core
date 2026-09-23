@@ -41,21 +41,38 @@ FAULT_ONSET_TEST = 160
 #: Muestra tras la cual entra el fallo en los ficheros de ENTRENAMIENTO de Rieth.
 FAULT_ONSET_TRAIN_RIETH = 20
 
+#: Muestra tras la cual entra el fallo en los ficheros de ENTRENAMIENTO del TEP
+#: clasico (d01.dat ... d21.dat). Russell, Chiang y Braatz (2000) indican que en
+#: los conjuntos de entrenamiento el fallo se introduce 1 hora despues del
+#: arranque, es decir tras 20 muestras de 3 minutos. Las 20 primeras filas de
+#: cada dXX.dat son operacion normal aunque el fichero lleve la etiqueta del
+#: fallo: quien entrene un clasificador con ellos tiene que descartarlas o
+#: reetiquetarlas. Pendiente de contrastar con Chiang, Russell y Braatz (2001).
+FAULT_ONSET_TRAIN_CLASSIC = 20
+
 VAR_NAMES = [f"xmeas_{i}" for i in range(1, N_XMEAS + 1)] + [
     f"xmv_{i}" for i in range(1, N_XMV + 1)
 ]
 
 COLUMNS = ["faultNumber", "simulationRun", "sample"] + VAR_NAMES
 
+#: Subconjunto de 33 variables que usan Yin et al. (2012): XMEAS(1..22) y
+#: XMV(1..11). Excluye los 19 analizadores de composicion, que se muestrean mas
+#: despacio. Es el conjunto que hay que usar para que la verificacion contra sus
+#: tablas sea comparable.
+YIN_VARS = [f"xmeas_{i}" for i in range(1, 23)] + [f"xmv_{i}" for i in range(1, N_XMV + 1)]
+
 
 def _as_samples_by_vars(arr: np.ndarray, source: str) -> np.ndarray:
     """Devuelve la matriz como (muestras, variables).
 
     El fichero d00.dat del TEP clasico viene TRANSPUESTO: llega como (52, 500)
-    cuando todos los demas son (muestras, 52). Cargarlo sin transponer no lanza
-    ninguna excepcion, simplemente ajusta el modelo sobre 52 observaciones y 500
-    variables y produce resultados sin sentido. Esta funcion lo corrige y deja
-    constancia.
+    cuando todos los demas son (muestras, 52). Cargarlo sin transponer no falla
+    en el ajuste: el PCA se calcula sobre 52 observaciones y 500 "variables", la
+    covarianza tiene rango 51 y el modelo "explica" toda la varianza. El error
+    aparece lejos de la causa, al puntuar un fichero bien orientado, como un
+    fallo de formas del escalador; y si entrenamiento y prueba tuvieran la misma
+    longitud ni siquiera apareceria. Esta funcion lo corrige y deja constancia.
     """
     if arr.ndim != 2:
         raise ValueError(f"{source}: se esperaba una matriz 2D, llego {arr.ndim}D")
@@ -205,6 +222,14 @@ def fault_onset(split: str, source: str = "classic") -> int | None:
     return None
 
 
-def values(df: pd.DataFrame) -> np.ndarray:
-    """Extrae solo la matriz de las 52 variables de proceso."""
-    return df[VAR_NAMES].to_numpy(dtype=float)
+def values(df: pd.DataFrame, columns: list[str] | None = None) -> np.ndarray:
+    """Extrae la matriz numerica de variables de proceso, en orden fijo.
+
+    Por defecto devuelve las 52 variables (`VAR_NAMES`). Con `columns` se
+    selecciona un subconjunto, por ejemplo `YIN_VARS` para reproducir la
+    configuracion de Yin et al. (2012). Se selecciona por nombre y no por
+    posicion: si falta una columna, falla con KeyError en vez de devolver una
+    matriz equivocada en silencio.
+    """
+    cols = list(VAR_NAMES) if columns is None else list(columns)
+    return df[cols].to_numpy(dtype=float)
