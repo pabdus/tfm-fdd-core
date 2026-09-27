@@ -23,6 +23,11 @@ dist/
 *.docx
 *.doc
 
+# Comprimidos: copias y paquetes de cambios que no son codigo. GitHub rechaza
+# ficheros de mas de 100 MB. (Esto no impide que setuptools meta LICENSE.zip
+# en la rueda: eso se arregla con license-files en pyproject.toml.)
+*.zip
+
 # Sistema
 .DS_Store
 Thumbs.db
