@@ -98,9 +98,13 @@ class PCAMonitor:
             artificialmente pequeno. Si el umbral se calibra con ese SPE
             optimista, en cuanto llegan datos que el modelo no vio el
             estadistico lo supera constantemente y la tasa de falsas alarmas se
-            dispara. Medido sobre el TEP clasico con 17 componentes: calibrando
-            con los datos del ajuste sale un 12,5 % de falsas alarmas, y
-            reservando datos normales para calibrar, un 2,3 %.
+            dispara. Las cifras del efecto NO se escriben aqui: salen de
+            `experiments/A0_calibracion_limites.py` y viven en su CSV con la
+            configuracion completa (variables, componentes, alpha, metodo,
+            tamanos de ajuste y calibracion). El efecto solo existe en los
+            limites calibrados con datos (SPE por box, kde o empirical); el
+            limite de T2 (distribucion F) y el de Jackson-Mudholkar son
+            parametricos y no usan X_cal.
 
             Es una forma de fuga de datos poco discutida, y por eso conviene
             documentarla en la memoria.

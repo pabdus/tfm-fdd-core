@@ -11,8 +11,13 @@ principio, es VERIFICAR EL PROTOCOLO: como Yin et al. (2012) y Russell et al.
 tasas se parecen a las suyas sabemos que la implementacion es correcta; si no,
 el error es nuestro y hay que encontrarlo antes de construir nada encima.
 
+Los valores por defecto se leen de configs/baseline.yaml, que es el protocolo
+comun de los tres bloques. Un argumento de linea de comandos lo sobreescribe
+para un experimento puntual, y el valor efectivo queda escrito en el CSV.
+
 Uso:
-    python experiments/A1_pca_baseline.py --alpha 0.99 --variance 0.90
+    python experiments/A1_pca_baseline.py                      # protocolo comun
+    python experiments/A1_pca_baseline.py --variance 0.90      # sensibilidad
 """
 
 from __future__ import annotations
@@ -22,19 +27,36 @@ from pathlib import Path
 
 import pandas as pd
 
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    yaml = None
+
+
+def cargar_protocolo(path: str | Path = "configs/baseline.yaml") -> dict:
+    """Lee el yaml del protocolo comun. Sin yaml o sin fichero, devuelve {}."""
+    path = Path(path)
+    if yaml is None or not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as fh:
+        return yaml.safe_load(fh) or {}
+
 from tfmfdd import data, metrics
 from tfmfdd.pca import PCAMonitor
 
 
 def main() -> None:
+    cfg = cargar_protocolo()
+    prot, pca_cfg, part = cfg.get("protocolo", {}), cfg.get("pca", {}), cfg.get("particion", {})
+
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--alpha", type=float, default=0.99, help="nivel de confianza")
-    p.add_argument("--variance", type=float, default=0.90, help="varianza acumulada")
-    p.add_argument("--lags", type=int, default=0, help="0 = PCA, 1 o 2 = DPCA")
-    p.add_argument("--spe-method", default="box",
+    p.add_argument("--alpha", type=float, default=prot.get("alpha", 0.99), help="nivel de confianza")
+    p.add_argument("--variance", type=float, default=pca_cfg.get("variance", 0.85), help="varianza acumulada")
+    p.add_argument("--lags", type=int, default=pca_cfg.get("lags", 0), help="0 = PCA, 1 o 2 = DPCA")
+    p.add_argument("--spe-method", default=pca_cfg.get("spe_method", "box"),
                    choices=["box", "jackson", "kde", "empirical"])
-    p.add_argument("--k", type=int, default=3, help="alarmas consecutivas")
-    p.add_argument("--cal-fraction", type=float, default=0.3,
+    p.add_argument("--k", type=int, default=prot.get("k_alarmas", 3), help="alarmas consecutivas")
+    p.add_argument("--cal-fraction", type=float, default=part.get("calibracion_limites", 0.3),
                    help="fraccion de datos normales reservada para calibrar los limites")
     p.add_argument("--root", default="data/tep_classic")
     p.add_argument("--out", default="results/summary")

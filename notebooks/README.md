@@ -2,6 +2,8 @@
 
 Tres cuadernos comentados que recorren el paquete paso a paso, con sus salidas ya ejecutadas para que se vea qué esperar antes de correr nada. Cada bloque de código dice qué módulo `.py` está usando, y al final de cada cuaderno hay una tabla que enlaza lo hecho con la función del paquete que lo hace.
 
+Revisados el 22 de septiembre de 2026; el `01` termina con un registro de lo que cambió y por qué. El `01` y el `02` traen las salidas borradas en las celdas modificadas: hay que ejecutarlos completos antes de subirlos.
+
 Se leen en orden:
 
 **`01_primeros_pasos.ipynb`** — para los tres. Cargar el TEP clásico, mirar las señales, ajustar el PCA, calcular T² y SPE, dibujar la carta de control, medir FAR, FDR y retardo sobre los 21 fallos, y ver con números por qué los umbrales se calibran con datos reservados.

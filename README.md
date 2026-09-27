@@ -24,7 +24,7 @@ Para Jonathan y Cesar, que solo necesitan usar el paquete:
 pip install git+https://github.com/pabdus/tfm-fdd-core@v0.2
 ```
 
-Fijad siempre una **etiqueta de versión** (`@v0.2`), no la rama principal. Si apuntáis a la rama, un cambio mío altera vuestros resultados en silencio y las tablas de la memoria dejan de ser coherentes entre capítulos.
+Fijen siempre una **etiqueta de versión** (`@v0.2`), no la rama principal. Si apuntan a la rama, un cambio mío altera sus resultados en silencio y las tablas de la memoria dejan de ser coherentes entre capítulos.
 
 Para trabajar sobre el propio repositorio:
 
@@ -74,7 +74,7 @@ from tfmfdd import data, metrics
 df = data.load_classic(5, "test")
 X = data.values(df)
 y = df["faultNumber"].to_numpy()
-# ... aquí va vuestro clasificador o vuestra red ...
+# ... aquí va su clasificador o su red ...
 ```
 
 ## Empezar por los notebooks
@@ -141,4 +141,4 @@ En los ficheros de prueba el fallo entra después de la muestra 160: las muestra
 
 ## Si encontráis un fallo en el paquete
 
-Abrid un *issue* con el caso que falla, o escribidme. **No hagáis commits aquí**: las instrucciones de UNIR exigen que cada repositorio tenga un único autor y en el mío no puede aparecer ningún commit vuestro. Yo lo corrijo, publico una versión nueva y aviso en el grupo para que los tres recalculemos lo que quede afectado.
+Abran un *issue* con el caso que falla, o escríbanme. **No hagan commits aquí**: las instrucciones de UNIR exigen que cada repositorio tenga un único autor y en el mío no puede aparecer ningún commit de ustedes. Yo lo corrijo, publico una versión nueva y aviso en el grupo para que los tres recalculemos lo que quede afectado.
