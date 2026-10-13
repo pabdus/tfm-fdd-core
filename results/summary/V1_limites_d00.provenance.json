@@ -1,0 +1,229 @@
+{
+  "csv": "V1_limites_d00.csv",
+  "csv_sha256": "b7bdd7e9f82b03f8b06a96c8232a69ade906a7fc22e5758bd4426665b2787854",
+  "schema": "tfmfdd.provenance/1",
+  "created_utc": "2026-10-13T17:51:33+00:00",
+  "created_local": "2026-10-13T12:51:33-05:00",
+  "script": "V1_verificacion_yin.py",
+  "argv": [
+    "--solo-limites"
+  ],
+  "config": {
+    "referencia": {
+      "tablas": "referencias/yin2012_tablas_transcripcion.csv",
+      "umbrales": "referencias/yin2012_umbrales_dibujados.csv",
+      "transcripcion_verificada": null,
+      "tabla_fdr": 4,
+      "tabla_far": 5
+    },
+    "explicito": {
+      "variables": "yin33",
+      "n_components": {
+        "PCA": 9,
+        "DPCA": 17
+      },
+      "t2_method": "f",
+      "calibration": "in_sample",
+      "regla_alarma": "t2_o_spe",
+      "excluidos_veredicto": [
+        3,
+        9,
+        15
+      ],
+      "retardo_k": 3
+    },
+    "supuestos": {
+      "S1_n_ajuste": 500,
+      "S2_fichero_far": "d00_te.dat",
+      "S3_variables_dpca": "yin33",
+      "S4_ddof": 1,
+      "S5_orden_dpca": "escalar_y_retardar",
+      "S6_lags_dpca": 2,
+      "S7_nivel": 0.99,
+      "S8_spe_method": "jackson",
+      "S9_far_ventana": null,
+      "S10_fdr_desde": 160,
+      "S11_t2_limite_dpca": "f_n_ajuste",
+      "S12_dpca_primeras_muestras": "no_evaluadas"
+    },
+    "variantes": [
+      {
+        "nombre": "S1_n480",
+        "cambios": {
+          "S1_n_ajuste": 480
+        }
+      },
+      {
+        "nombre": "S4_ddof0",
+        "cambios": {
+          "S4_ddof": 0
+        }
+      },
+      {
+        "nombre": "S5_retardar_y_escalar",
+        "cambios": {
+          "S5_orden_dpca": "retardar_y_escalar"
+        }
+      },
+      {
+        "nombre": "S9_far_1_960",
+        "cambios": {
+          "S9_far_ventana": [
+            0,
+            null
+          ]
+        }
+      },
+      {
+        "nombre": "S9_far_1_800",
+        "cambios": {
+          "S9_far_ventana": [
+            0,
+            800
+          ]
+        }
+      },
+      {
+        "nombre": "S11_t2_n_por_h1",
+        "cambios": {
+          "S11_t2_limite_dpca": "f_n_por_h1"
+        }
+      },
+      {
+        "nombre": "S11_t2_dibujado_fig2",
+        "cambios": {
+          "S11_t2_limite_dpca": "dibujado_fig2"
+        }
+      },
+      {
+        "nombre": "S11_t2_dibujado_fig5",
+        "cambios": {
+          "S11_t2_limite_dpca": "dibujado_fig5"
+        }
+      }
+    ],
+    "tolerancia": {
+      "comparacion": null,
+      "fdr_umbral_por_fallo_pp": null,
+      "fdr_min_fallos_dentro": null,
+      "fdr_max_pp": null,
+      "fdr_media_max_pp": null,
+      "far_max_pp": null,
+      "dpca": null
+    },
+    "secundaria": {
+      "incluir": null,
+      "tabla_fdr": 7,
+      "tabla_far": 8,
+      "n_components": {
+        "PCA": 17,
+        "DPCA": null
+      }
+    }
+  },
+  "config_files": [
+    {
+      "path": "configs/yin2012.yaml",
+      "source": "explicit",
+      "sha256": "7a7fce367778f14746fb0f874135cfc0b5373f8fe4709b769bf61619919a87d3"
+    },
+    {
+      "path": "configs/referencias/yin2012_tablas_transcripcion.csv",
+      "source": "referencia",
+      "sha256": "7ec2f7b12a46d6e043d84ad710fcf20be4d4329da83203f3613c9e2f39768325"
+    },
+    {
+      "path": "configs/referencias/yin2012_umbrales_dibujados.csv",
+      "source": "referencia",
+      "sha256": "d54eb269e81559a1d36e663be3c6ab42057d24b6cbfd0aa40809d44f6f0da713"
+    }
+  ],
+  "ids": {
+    "fuente": "classic",
+    "ajuste": "d00.dat, filas 1 a 500 (y las de las variantes)",
+    "prueba": "ninguna (--solo-limites)"
+  },
+  "inputs": [
+    {
+      "name": "d00.dat",
+      "bytes": 416049,
+      "sha256": "4c3c0b11eefacf93e5d2529e2866d7a625e37aa9153d0f95fae17a6c9e560deb"
+    }
+  ],
+  "git": {
+    "available": true,
+    "repository": true,
+    "commit": "fe043173389aca092c80630fcb1e3203ea8362b3",
+    "tags": [],
+    "dirty": false,
+    "untracked": 10,
+    "status": [
+      "?? results/summary/A0_calibracion_limites.provenance.json",
+      "?? results/summary/A0_calibracion_limites_por_fichero.provenance.json",
+      "?? results/summary/A0_calibracion_limites_por_fichero_yin33.provenance.json",
+      "?? results/summary/A0_calibracion_limites_t2.provenance.json",
+      "?? results/summary/A0_calibracion_limites_t2_yin33.provenance.json",
+      "?? results/summary/A0_calibracion_limites_yin33.provenance.json",
+      "?? results/summary/A1_pca_baseline_SPE.provenance.json",
+      "?? results/summary/A1_pca_baseline_T2.provenance.json",
+      "?? results/summary/A1_pca_baseline_runs.provenance.json",
+      "?? results/summary/V1_limites_d00.provenance.json"
+    ]
+  },
+  "versions": {
+    "pyyaml_version": "6.0.3",
+    "pyarrow_version": "25.0.1",
+    "matplotlib_version": "3.11.0"
+  },
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "system": "Windows",
+    "machine": "AMD64",
+    "cpu_model": "13th Gen Intel(R) Core(TM) i7-13620H",
+    "cpu_count_logical": 16,
+    "cpu_count_physical": 10,
+    "ram_total_bytes": 16788725760,
+    "python_version": "3.12.0",
+    "python_implementation": "CPython",
+    "numpy_version": "2.4.6",
+    "scipy_version": "1.18.0",
+    "pandas_version": "3.0.3",
+    "sklearn_version": "1.9.0",
+    "torch_version": null,
+    "tfmfdd_version": "0.3.0",
+    "psutil_version": "7.2.2",
+    "threadpoolctl_version": "3.6.0",
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 16,
+        "version": "0.3.31.188.0"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 16,
+        "version": "0.3.31.dev"
+      },
+      {
+        "user_api": "openmp",
+        "internal_api": "openmp",
+        "num_threads": 16,
+        "version": null
+      }
+    ],
+    "blas_threads": "openblas=16;openblas=16;openmp=16",
+    "torch_loaded": false,
+    "torch_num_threads": null,
+    "torch_num_interop_threads": null,
+    "env_omp_num_threads": null,
+    "env_mkl_num_threads": null,
+    "env_openblas_num_threads": null,
+    "process_time_tick_s": 0.015625
+  },
+  "extra": {
+    "modo": "solo_limites",
+    "huella": "4488a633cb63"
+  }
+}

@@ -4,15 +4,15 @@ Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la no
 
 ## v0.3 (12 de octubre de 2026)
 
-Sale de la revisión del código del 11 y el 12 de octubre sobre la rama `revision-2026-09` (commit `58a07e2`). La versión del paquete pasa de 0.1.0, la que decían `pyproject.toml` y `tfmfdd/__init__.py`, a 0.3.0. Los identificadores entre paréntesis (B2, M7, DAT-5, H8…) remiten a la revisión del 27/09 (`docs/revision_2026-09-27.md` y `docs/revision_2026-09-27_agentes.md`), a la del 03/10 (informe 07, código) y a los informes de la revisión del 12/10.
+Sale de la revisión del código del 11 y el 12 de octubre sobre la rama `revision-2026-09` (commit `58a07e2`). Este repositorio se volvió a crear el 13/10 con la v0.3 como primer commit: la historia anterior, `58a07e2` incluido, solo está en la copia de Pablo. La versión del paquete pasa de 0.1.0, la que decían `pyproject.toml` y `tfmfdd/__init__.py`, a 0.3.0. Los identificadores entre paréntesis (B2, M7, DAT-5, H8…) remiten a la revisión del 27/09 (`docs/revision_2026-09-27.md` y `docs/revision_2026-09-27_agentes.md`), a la del 03/10 (informe 07, código) y a los informes de la revisión del 12/10.
 
 ### Cómo actualizar
 
 - **Jonathan y Cesar**, cuando Pablo publique la etiqueta: `pip install --upgrade git+https://github.com/pabdus/tfm-fdd-core@v0.3` (y `@v0.3` en su `requirements.txt`). Después, recalcular lo de la lista siguiente que les afecte.
 - **Pablo**, antes de publicar la etiqueta:
   1. Ejecutar la suite (`README.md`, "Pruebas").
-  2. Después del commit, regenerar `results/summary/` desde la raíz (`python experiments/A1_pca_baseline.py`, `python experiments/A0_calibracion_limites.py` con y sin `--yin-vars`, y `python experiments/V1_verificacion_yin.py --solo-limites`), para que cada `.provenance.json` registre un commit limpio: los que hay se generaron en una copia con cambios sin confirmar. En el mismo entorno, las cifras no deberían cambiar.
-  3. Los cuadernos 01, 02, 03 y B00 ya se volvieron a ejecutar en el repositorio el 12/10, sin errores, con el Python global; no hace falta repetirlos salvo que cambie algo. Pedirle a Cesar el C00 ejecutado con PyTorch.
+  2. Después del commit, regenerar `results/summary/` desde la raíz (`python experiments/A1_pca_baseline.py`, `python experiments/A0_calibracion_limites.py` con y sin `--yin-vars`, y `python experiments/V1_verificacion_yin.py --solo-limites`), para que cada `.provenance.json` registre un commit limpio. Hecho el 13/10 con el entorno de la opción 2 de `docs/entorno.md`, sobre el primer commit de este repositorio: los diez CSV salieron idénticos a los confirmados y cada `.provenance.json` registra ese commit sin cambios sin confirmar.
+  3. Los cuadernos 01, 02, 03 y B00 ya se volvieron a ejecutar en el repositorio el 12/10, sin errores, con el Python global; no hace falta repetirlos salvo que cambie algo. El C00 sigue sin volver a ejecutarse: desde el 13/10 PyTorch carga en el equipo de Pablo (`docs/entorno.md`), así que se puede ejecutar allí o pedírselo a Cesar.
   4. Publicar la etiqueta `v0.3` y mandar la línea de instalación.
 
 ### Qué resultados quedan afectados (resumen)
