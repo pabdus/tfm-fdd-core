@@ -1,0 +1,5 @@
+calibracion,t2_method,t2_limit,far_t2_media_prefallo,far_t2_d00_te,far_teorica_faseII,n_components,variance,alpha,n_vars,n_fit,n_cal,statistic,limit_source,n_cal_used,quantile_method,far_window_d00_te,far_window_prefallo
+f,f,52.62659389308314,0.013988095238095239,0.014583333333333334,0.010000000000000156,27,0.85,0.99,52,350,150,T2,parametric_fit,,linear,"[0, null]","[0, 160]"
+beta,beta,45.61398296727863,0.04642857142857143,0.06354166666666666,0.040513185300477164,27,0.85,0.99,52,350,150,T2,parametric_fit,,linear,"[0, null]","[0, 160]"
+empirico_reservada,empirical,50.04391160847725,0.022321428571428575,0.020833333333333332,,27,0.85,0.99,52,350,150,T2,holdout,150,linear,"[0, null]","[0, 160]"
+empirico_en_muestra,empirical,47.663984180885855,0.033035714285714286,0.03854166666666667,,27,0.85,0.99,52,350,150,T2,in_sample,150,linear,"[0, null]","[0, 160]"

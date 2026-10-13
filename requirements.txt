@@ -1,0 +1,18 @@
+numpy>=1.24
+pandas>=2.0
+scipy>=1.10
+scikit-learn>=1.6
+matplotlib>=3.7
+pyarrow>=12.0
+pyyaml>=6.0
+psutil>=5.9
+
+# Solo para convertir los ficheros .RData de Rieth:
+pyreadr>=0.5
+
+# Desarrollo:
+pytest>=7.0
+jupyter>=1.0
+
+# Son minimos, los mismos de pyproject.toml. Las versiones exactas con que
+# pasaron las pruebas de la v0.3 estan en requirements-probado.txt.

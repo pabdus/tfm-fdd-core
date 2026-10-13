@@ -1,0 +1,197 @@
+# Configuracion del protocolo comun. Los tres bloques del TFM parten de aqui.
+# Cualquier cambio en este fichero es un evento de coordinacion: se anuncia en la
+# reunion del lunes y los tres recalculan los resultados afectados.
+#
+# Como se lee: tfmfdd.config.load_baseline() (ruta explicita, variable de entorno
+# TFMFDD_CONFIG, este fichero en el directorio de trabajo y, por ultimo, la copia
+# que viaja con el paquete en tfmfdd/configs/baseline.yaml). Las dos copias son
+# identicas y una prueba lo exige: si cambias una, cambia la otra.
+#
+# Las claves con valor null son decisiones PENDIENTES de Pablo: se fijan por
+# escrito y con fecha en docs/decisiones.md antes de los experimentos
+# confirmatorios (memoria, parrafo 369). Ningun script las sustituye por un valor
+# por defecto: el que las necesita se niega a ejecutar mientras sigan en null.
+#
+# La configuracion y la tolerancia de la verificacion frente a Yin et al. (2012)
+# no estan aqui: son las de esos autores, no las del protocolo
+# (configs/yin2012.yaml).
+
+protocolo:
+  alpha: 0.99              # nivel de confianza de los limites de control
+  alpha_sensibilidad: 0.95 # segundo nivel, para el analisis de sensibilidad
+  k_alarmas: 3             # alarmas consecutivas para confirmar deteccion
+  sample_minutes: 3.0      # minutos entre muestras en el TEP
+  semilla: 42
+  min_fdr: 0.10            # (v0.3) FDR por debajo de la cual una racha de k alarmas
+                           # se marca como al azar (detected_at_chance) y su retardo no
+                           # se interpreta. Convencion de decisiones.md (22/09); hasta
+                           # ahora solo estaba como valor por defecto en el codigo
+  retardo_convencion: appearance  # (v0.3) retardo = primera alarma de la primera
+                           # racha de k: "la primera de una serie de tres alarmas
+                           # seguidas" (memoria, parrafo 276), y retardo nulo si salta
+                           # en la muestra 161 (parrafo 289). La otra opcion de
+                           # metrics.detection_delay es "confirmation"
+
+contrastes:                # (v0.3)
+  alpha_contrastes: 0.05   # alfa de los contrastes (Wilcoxon pareado con Holm). NO es
+                           # el nivel de confianza de los limites (protocolo.alpha): la
+                           # memoria los nombra distinto y fija este valor ("alfa = 0,05
+                           # [...] fijada antes de ejecutar", parrafo 358; decisiones.md,
+                           # 22/09). Se pasa como alpha= a las funciones de tfmfdd.stats
+  delta:                   # PENDIENTE. Diferencia minima relevante por metrica, en las
+                           # unidades de la metrica (fraccion para FDR y FAR, no puntos),
+                           # sobre la pseudomediana de Hodges-Lehmann de la diferencia
+                           # por simulacion (parrafo 368). La regla 8 de
+                           # reglas_de_medida.md cita una propuesta sin acordar (DIS-11)
+    fdr: null
+    far: null
+    retardo_muestras: null
+    macro_f1: null
+  lateralidad: null        # PENDIENTE. No superioridad con dos unilaterales al alfa
+                           # cada uno (lo implementado en stats.non_superiority_test, con
+                           # intervalo al 1 - 2 alfa) o un bilateral (imp_contrastes, H13)
+  no_contrastables: null   # PENDIENTE. Comparaciones sin diferencias no nulas: cuentan
+                           # en Holm con p = 1 (lo implementado) o salen de la familia
+
+hipotesis:                 # PENDIENTE: familia confirmatoria (parrafos 348, 349 y 368)
+  metrica_ventaja: null    # FDR, exceso de la FDR sobre la FAR de la misma simulacion,
+                           # o FDR a FAR igualada (imp_contrastes, decisiones 1 y 2)
+  mayor_es_mejor: null     # sentido de la ventaja en esa metrica (higher_is_better)
+  baselines: null          # que son "PCA" y "DPCA" en la familia: estadistico (T2, SPE
+                           # o la regla T2 o SPE), retardos del DPCA y limite (DIS-10)
+  fallos_control: null     # fallos en los que se espera deteccion (parrafo 368), con la
+                           # regla para elegirlos y que pasa si fallan; DIS-15 cita 10,
+                           # 11, 16 y 20 solo como ejemplo
+  tabla_ventajas_publicadas: null  # ruta de la tabla de ventajas publicadas, fijada
+                           # antes de los experimentos confirmatorios (parrafos 349, 368)
+
+deteccion:                 # (v0.3)
+  ventana_far_normal: null # PENDIENTE. Ventana de la FAR en las simulaciones normales,
+                           # con el formato de far_window de metrics.evaluate_run:
+                           # [inicio, fin] en base cero, fin excluido, null = el final.
+                           # DIS-2 y el informe 06 proponen [160, null] (muestras 161 a
+                           # 960 de test_fault00); hoy A0 y A1 usan la serie entera
+  falsas_alarmas_por_hora: null  # PENDIENTE. Unidad de la memoria (parrafo 361):
+                           # "muestras" (metrics.false_alarm_samples_per_hour) o
+                           # "episodios" (metrics.false_alarm_episodes_per_hour)
+  mediana_retardo: null    # PENDIENTE. "condicionada" (delay_samples_median, sobre las
+                           # detecciones validas) o "censurada" (delay_samples_median_censored)
+  suelo:                   # PENDIENTE. "Ninguno de los dos detecta el fallo por encima
+                           # de su tasa de falsas alarmas" (parrafo 368):
+                           # metrics.detects_above_far
+    margen: null           # banda: exceso minimo de la FDR sobre la FAR por simulacion
+    far_emparejada: null   # "gemela_normal" (test_fault00, misma ventana) o "prefallo"
+    alpha: null            # alfa de esta comprobacion y si lleva correccion
+    min_simulaciones: null
+  pr_auc_conjunto: null    # PENDIENTE. Que muestras forman el conjunto de la PR-AUC
+                           # (cada simulacion o un pool con test_fault00)
+
+diagnostico:               # (v0.3)
+  incluir_normal: null     # PENDIENTE. Si la clase normal entra en la macro-F1
+                           # (include_normal de metrics.diagnosis_metrics); el mismo
+                           # valor en los tres bloques
+  etiqueta_prefallo: null  # PENDIENTE. Que se hace con las muestras previas al inicio
+                           # del fallo en el diagnostico (regla 6)
+
+particion:
+  fraccion_ajuste: 0.6
+  fraccion_validacion: 0.2
+  fraccion_prueba: 0.2
+  calibracion_limites: 0.3  # parte de los datos normales reservada para calibrar. Solo
+                            # tiene sentido en el TEP clasico (corte temporal de d00.dat
+                            # en A0 y A1); en Rieth se reservan simulaciones (abajo)
+  rieth:                    # (v0.3) PENDIENTE (M15 de rev_trazabilidad). Simulaciones
+                            # normales de entrenamiento por replica de ajuste
+    normales_ajuste: null   # para ajustar el modelo
+    normales_calibracion: null  # para calibrar los limites (otras que las del ajuste)
+    replicas_ajuste: null   # R; con Holm sobre 4 contrastes hace falta R >= 8
+                            # (informe 06, 2.3)
+
+datos:
+  fuente: classic           # classic | rieth
+  runs_desarrollo: 20
+  runs_finales: 100
+  fault_onset_test: 160
+  ids_confirmatorios: null  # (v0.3) PENDIENTE. Procedimiento escrito para elegir los
+                            # ids de prueba confirmatorios, los mismos en los tres
+                            # bloques, y que ficheros cuentan como "no mirados" (regla 3;
+                            # data.seen_runs, data.unseen_runs, imp_datos decision 2)
+  tramo_copiado: null       # (v0.3) PENDIENTE. Tramo de Rieth que sigue siendo copia de
+                            # la gemela tras el inicio nominal: medirlo, declararlo o
+                            # descartarlo, igual en los tres bloques (regla 6;
+                            # data.effective_onset)
+
+pca:
+  variance: 0.85
+  spe_method: box           # box | jackson | kde | empirical
+  lags: 0                   # 0 = PCA, 1 o 2 = DPCA
+  t2_method: f              # (v0.3) f | beta | empirical | kde. "f" (Fase II) es el de
+                            # siempre y el valor por defecto de PCAMonitor
+  quantile_method: linear   # (v0.3) linear | conformal: estimador del percentil de los
+                            # limites empirical; "linear" es el de siempre
+  calibration: holdout      # (v0.3) holdout | in_sample. Limites calibrados con datos
+                            # normales reservados (regla 3; parrafo 367). in_sample solo
+                            # para el brazo en muestra del factor 1 y para Yin
+
+limites_protocolo:          # (v0.3) PENDIENTE. Los valores de pca de arriba son los de
+                            # desarrollo (A0 y A1). Los del resultado en Rieth: "todos
+                            # los umbrales se calibraran a la misma FAR nominal con
+                            # simulaciones normales reservadas" (parrafo 367; informe
+                            # 06, 2.2 y 3.3)
+  t2_method: null
+  spe_method: null
+  quantile_method: null
+  nivel_por_estadistico: null  # nivel de cada limite en la regla T2 o SPE: el mismo de
+                            # protocolo.alpha o Sidak (alpha ** 0.5) para una FAR nominal
+                            # conjunta (DIS-10; PCAMonitor.combined_index)
+  orden_escalado_dpca: null # sin el gancho scaler=, PCAMonitor escala la matriz con
+                            # retardos; con el gancho, escala antes de retardar
+                            # (imp_monitor, decision 7)
+
+ablaciones:                 # (v0.3) PENDIENTE. Prerregistro de las cuatro ablaciones
+                            # sobre Rieth (parrafos 355 y 367; informe 06, 2.1 a 2.4)
+  unidad_replica: null      # factor 1: la replica de ajuste como unidad, o la simulacion
+  familia_holm: null        # por factor (informe 06, opcion 1), global o sin contraste
+  regla_equivalencia: null  # cuando un efecto es "equivalente a cero" (parrafo 355), por
+                            # ejemplo, intervalo dentro de +-delta
+  metrica_principal:
+    factor1: null
+    factor2: null
+    factor3: null
+    factor4: null
+  estimanda_factor3: null   # detectores: FAR externa u optimismo de la FAR interna
+  brazo_sucio_factor2: null # S1 (ajuste y prueba juntos), S2 (cada simulacion con sus
+                            # propios estadisticos) o los dos (parrafo 284)
+
+compromiso:                 # (v0.3) PENDIENTE. Criterio de mejor compromiso, uno para
+  deteccion: null           # la deteccion y otro para el diagnostico (parrafo 369)
+  diagnostico: null
+
+coste:                      # (v0.3) PENDIENTE (parrafo 369; tfmfdd.cost.measure_cost)
+  maquina_referencia: null
+  hilos_blas: null
+  hilos_torch: null
+  ajuste_incluye: null      # calibracion de limites, parada temprana, busqueda...
+  batch_size: null          # inferencia en linea (1) o por lotes
+  n_repeats_fit: null
+  n_warmup_fit: null
+  n_repeats_infer: null
+  n_warmup_infer: null
+  memoria_reportada: null   # pico del ajuste, de la inferencia o de vida del proceso
+
+robustez:                   # (v0.3) PENDIENTE. Adaptacion del indice de Bernal-de
+                            # Lazaro et al. (2018), "con la rejilla de niveles de ruido,
+                            # se declarara antes de ejecutar" (parrafo 369)
+  niveles_deteccion: null   # rejilla de niveles (D_p depende del paso)
+  niveles_diagnostico: null
+  tipo_ruido: null          # gaussian | uniform
+  variables: null
+  sigma_s_de: null          # de que datos sale sigma_s, con que ddof y en que unidades
+  n_repeticiones: null
+  numeros_comunes: null
+  metrica_deteccion: null   # far | missed_detection | eq3
+  metrica_diagnostico: null # eq3 | one_minus_macro_f1
+  limite: null              # fijo o recalibrado en cada nivel
+  confianza: null
+
+fallos_dificiles: [3, 9, 15]  # se reportan siempre por separado

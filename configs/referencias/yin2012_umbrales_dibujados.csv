@@ -1,0 +1,16 @@
+# Umbrales que Yin et al. (2012) dibujan (linea roja discontinua) en las Fig. 2 (p. 1573) y 5 (p. 1576).
+# Leidos de los vectores del PDF con umbrales_dibujados.py (ajuste lineal de las marcas del eje); 2026-10-12.
+# Lectura de Claude, pendiente de la verificacion de Pablo. Leer con pandas.read_csv(ruta, comment="#").
+pagina_impresa,figura,fallo,panel,metodo,estadistico,y_pdf,umbral_leido,unidades_por_punto,residuo_max_marcas,n_marcas
+1573,Fig. 2,16,(a) PCA,PCA,T2,115.951,22.41,1.191,0.0207,5
+1573,Fig. 2,16,(a) PCA,PCA,SPE,201.833,23.405,0.893,0.0201,7
+1573,Fig. 2,16,(c) FDA,FDA,T2,443.046,39.024,9.972,0.1857,9
+1573,Fig. 2,16,(b) DPCA,DPCA,T2,111.935,33.993,1.489,0.0291,6
+1573,Fig. 2,16,(b) DPCA,DPCA,SPE,208.623,57.806,2.978,0.0524,5
+1573,Fig. 2,16,(d) SAP,SAP,T2,445.907,22.972,21.814,0.4225,8
+1576,Fig. 5,19,(a) PCA,PCA,T2,97.421,22.395,0.582,0.0099,5
+1576,Fig. 5,19,(a) PCA,PCA,SPE,204.499,23.407,0.873,0.0207,7
+1576,Fig. 5,19,(c) FDA,FDA,T2,431.491,38.93,1.828,0.0431,7
+1576,Fig. 5,19,(b) DPCA,DPCA,T2,89.166,34.0,0.728,0.0134,6
+1576,Fig. 5,19,(b) DPCA,DPCA,SPE,204.805,57.864,2.183,0.0362,4
+1576,Fig. 5,19,(d) SAP,SAP,T2,431.624,23.219,1.097,0.0214,10

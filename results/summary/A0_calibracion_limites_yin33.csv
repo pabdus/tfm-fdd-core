@@ -1,0 +1,5 @@
+calibracion,spe_limit,far_spe_media_prefallo,far_spe_d00_te,n_components,variance,alpha,spe_method,n_vars,n_fit,n_cal,statistic,limit_source,n_cal_used,quantile_method,far_window_d00_te,far_window_prefallo
+en_muestra,11.239321706908424,0.0744047619047619,0.06875,15,0.85,0.99,box,33,350,150,SPE,in_sample,350,linear,"[0, null]","[0, 160]"
+reservada,16.51487983346605,0.009821428571428573,0.003125,15,0.85,0.99,box,33,350,150,SPE,holdout,150,linear,"[0, null]","[0, 160]"
+en_muestra_mismo_ncal,12.53843660069571,0.04672619047619046,0.03854166666666667,15,0.85,0.99,box,33,350,150,SPE,in_sample,150,linear,"[0, null]","[0, 160]"
+jackson,11.496077289500585,0.06726190476190474,0.058333333333333334,15,0.85,0.99,jackson,33,350,150,SPE,parametric_fit,,linear,"[0, null]","[0, 160]"
