@@ -1,7 +1,7 @@
 # Transcripcion de Yin et al. (2012), J. Process Control 22, 1567-1581, doi:10.1016/j.jprocont.2012.06.009.
 # Tablas 4 (FDR, p. 1574), 5 (FAR, p. 1574), 7 (FDR, p. 1576) y 8 (FAR, p. 1577); datos de Chiang et al. (2001) [6].
 # Extraida del PDF por coordenadas (PyMuPDF) y revisada con las regiones renderizadas; fecha 2026-10-11.
-# Transcripcion de Claude, pendiente de la verificacion de Pablo. Ver LEEME_yin2012_transcripcion.md.
+# Transcripcion de Claude, verificada por Pablo contra el PDF el 2026-10-14 (Tablas 4, 5, 7 y 8, las nueve columnas). Ver LEEME_yin2012_transcripcion.md.
 # Leer con pandas.read_csv(ruta, comment="#").
 tabla,pagina_impresa,metrica,configuracion,metodo,estadistico,estadisticos_combinados,fallo,etiqueta_impresa,orden_fila,bloque,valor_impreso,valor_num,resaltado_rojo,fragmentos_pdf,compatible_k800,fallo_excluido_parrafo369,dudosa,nota
 4,1574,FDR,Tabla 3 (p. 1572),PCA,combinado,"T2 o SPE (p. 1568, paso 3: SPE<=Jth,SPE y T2<=Jth,T2 => sin fallo; si no, fallo; paneles de la Fig. 2a, p. 1573)",1,IDV(1),1,1,99.88,99.88,0,99.88,1,0,0,

@@ -19,6 +19,7 @@ respaldo si algo se cuestiona en la defensa.
 | 2026-09-22 | Documentos y cuadernos en espanol neutro, con ustedes | Pablo | Dos companeros de Costa Rica y Colombia |
 | 2026-10-04 | Diagnostico: la metrica es la macro-F1, que promedia la F1 de cada fallo (memoria, 2.2.4) | Jonathan (11:49), con el visto bueno de Pablo (11:51) | Pesa lo mismo cada tipo de fallo y no cada muestra (memoria, parrafos 278, 344 y 358). Es la decision 15 del traspaso v12 (5.1, linea 328; 8.1, linea 1139); se anota en este registro el 2026-10-12. Si la clase normal entra en el promedio sigue pendiente (`diagnostico.incluir_normal` en configs/baseline.yaml) |
 | 2026-10-04 | Diagnostico: la estandarizacion se ajusta solo con los datos normales del ajuste, como en la deteccion | Jonathan (11:49), con el visto bueno de Pablo (11:51) | La memoria lo fija: "la estandarizacion se ajustara solo con las simulaciones normales del ajuste, tambien en el diagnostico" (parrafo 367). Es la decision 16 del traspaso v12 (5.1, linea 329; 8.1, linea 1139); se anota en este registro el 2026-10-12. En el paquete, `preprocessing.Scaler(normal_label=0)` por defecto desde la v0.3 |
+| 2026-10-14 | Verificacion frente a Yin (configs/yin2012.yaml): tolerancia A, replica estricta (abs(dFDR) <= 0,5 pp, 4 muestras de 800, en cada uno de los 18 fallos de los bloques 1 y 2, y abs(dFAR) <= 0,5 pp), comparacion por conteo; DPCA descriptivo (S11 abierto); ventana de la FAR [160, null] (muestras 161 a 960 de d00_te.dat), con 1 a 960 y 1 a 800 como variantes informativas; configuracion secundaria (Tablas 7 y 8) informativa, con DPCA l = 40; transcripcion de las Tablas 4, 5, 7 y 8 (nueve columnas) y umbrales dibujados comprobados por Pablo contra el PDF el 2026-10-14. Solo la configuracion principal decide el veredicto: si no cuadra, se reporta "no verificado" y las variantes van como informacion, sin calificar ninguna y sin rescatar el veredicto. Vale la primera ejecucion con esta huella; otra ejecucion se reporta como tal, con su motivo. En esta verificacion el DPCA no pasa a tener veredicto, y S11 solo se cierra con evidencia que no salga de los ficheros de prueba. Etiqueta git: verificacion-yin-2026-10-14 [V1-yin huella=509751e8faac] | Pablo | Parrafos 355 y 369: tolerancia fijada antes de ejecutar y sin ajustes para que coincidan. Una variante que rescatara el veredicto, o una ejecucion elegida despues de ver otra, seria seleccion a posteriori: el mecanismo que documenta el capitulo 2 |
 
 ## Como se fija la verificacion frente a Yin (la fila de la huella)
 
@@ -98,7 +99,8 @@ python experiments/V1_verificacion_yin.py --huella
   ellas el procedimiento de los ids confirmatorios), `limites_protocolo`,
   `ablaciones`, `compromiso`, `coste` y `robustez`. El comentario de cada clave
   dice que opciones ofrece el codigo y de donde sale la pregunta.
-- `configs/yin2012.yaml` (la verificacion): 11 claves en null el 2026-10-12.
+- `configs/yin2012.yaml` (la verificacion): 11 claves en null el 2026-10-12;
+  todas fijadas el 2026-10-14 (fila de esa fecha).
 - Seis claves de `configs/baseline.yaml` llevan valor desde la v0.3 y no son
   todavia decisiones de este registro, porque las propuso la revision del
   codigo del 12/10: `contrastes.alpha_contrastes` (0,05), `pca.t2_method` (f),

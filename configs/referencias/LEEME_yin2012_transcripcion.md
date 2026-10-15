@@ -1,6 +1,6 @@
 # Referencias de Yin et al. (2012) para la verificación de la implementación
 
-**Transcripción de Claude (agente ref_yin, 11 y 12/10/2026), pendiente de la verificación de Pablo.** Hasta que Pablo la compruebe contra el PDF y lo anote en `configs/yin2012.yaml` (clave `referencia.transcripcion_verificada`, con la fecha), `experiments/V1_verificacion_yin.py` se niega a compararla con nada.
+**Transcripción de Claude (agente ref_yin, 11 y 12/10/2026), verificada por Pablo contra el PDF el 14/10/2026.** Pablo tecleó, leyendo la tabla impresa, las nueve columnas de las Tablas 4, 5, 7 y 8, y comprobó los umbrales dibujados de las Fig. 2 y 5: ninguna discrepancia. El registro de esa comprobación está fuera del repositorio (`Contexto/04_Investigacion/Revisiones_E2/DuquePablo_TFM_Verificacion_Transcripcion_Yin_14oct.md`), y la fecha, en `configs/yin2012.yaml` (clave `referencia.transcripcion_verificada`). Sin esa fecha, `experiments/V1_verificacion_yin.py` se niega a comparar la transcripción con nada.
 
 ## Qué hay en esta carpeta
 
@@ -34,7 +34,7 @@ Yin et al. dan **una sola cifra por método y fallo**, la de la regla conjunta: 
 
 - `tabla`, `pagina_impresa`, `metrica` (FDR o FAR), `configuracion` (la tabla de parámetros que le corresponde).
 - `metodo`, `estadistico`, `estadisticos_combinados`.
-- `fallo` (0 = operación normal, la fila IDV(0) de las tablas de FAR), `etiqueta_impresa`, `orden_fila`, `bloque` (1, 2 o 3: los tres bloques que separan las líneas horizontales de las Tablas 4 y 7).
+- `fallo` (0 = operación normal, la fila IDV(0) de las tablas de FAR), `etiqueta_impresa`, `orden_fila`, `bloque` (1, 2 o 3: los tres bloques que separan las líneas horizontales de las Tablas 4 y 7; 0 en la fila IDV(0) de las Tablas 5 y 8).
 - `valor_impreso`: el texto tal como está impreso (cuatro celdas del original llevan coma decimal: "24,25", "18,75", "21,88", "18,75"). `valor_num`: el mismo valor como número.
 - `resaltado_rojo`: 1 si la celda está en rojo y negrita (la FDR más alta del fallo; en las tablas de FAR, la más baja).
 - `fragmentos_pdf`: cómo viene partido el número en la capa de texto del PDF.
@@ -59,7 +59,7 @@ Los scripts que lo hicieron y sus salidas están fuera del repositorio (carpeta 
 
 ## Cómo la verifica Pablo
 
-Para el OE1 basta con las columnas PCA y DPCA de las Tablas 4 y 5: 42 FDR y 2 FAR (`tabla in (4, 5)` y `metodo in ("PCA", "DPCA")`).
+Para el OE1 basta con las columnas PCA y DPCA de las Tablas 4 y 5: 42 FDR y 2 FAR (`tabla in (4, 5)` y `metodo in ("PCA", "DPCA")`). Como V1 también lee las Tablas 7 y 8 (la configuración secundaria entró el 14/10/2026), la verificación de esa fecha cubrió las cuatro tablas, con sus nueve columnas.
 
 1. Abre el PDF en la p. 1574 (Tablas 4 y 5).
 2. Filtra el CSV: `df = pd.read_csv(ruta, comment="#"); df[df.tabla.isin([4, 5]) & df.metodo.isin(["PCA", "DPCA"])][["tabla", "metodo", "etiqueta_impresa", "valor_impreso"]]`.

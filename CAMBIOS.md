@@ -2,6 +2,17 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
+## Sin publicar (14 de octubre de 2026)
+
+Cierre de la configuración de la verificación frente a Yin et al. (2012). No cambia el código de `tfmfdd/` ni el de `experiments/`.
+
+- `configs/yin2012.yaml`: Pablo fijó las decisiones pendientes (tolerancia A con comparación por conteo, DPCA descriptivo, ventana de la FAR [160, null] y configuración secundaria con DPCA l = 40) y la fecha en que verificó la transcripción. Fila del 2026-10-14 en `docs/decisiones.md`.
+- `configs/referencias/`: solo cambian las líneas de comentario que decían "pendiente de la verificacion de Pablo". Ningún valor cambia, pero la huella sí, porque resume el texto entero de los dos CSV: se registra después de este cambio.
+- `tests/test_v03_experimentos.py`: las tres pruebas que exigían decisiones pendientes en el yaml real usan ahora una copia con esas claves en null, y la del yaml real comprueba que ya no le queda nada pendiente.
+- `docs/verificacion_yin.md` y `docs/reglas_de_medida.md`: la regla de las variantes (no rescatan el veredicto), la primera ejecución, el DPCA descriptivo y el estado de S9, S12 y la configuración secundaria.
+
+**Qué resultados quedan afectados:** ninguno. Jonathan y Cesar siguen con la etiqueta v0.3 y no tienen que hacer nada.
+
 ## v0.3 (12 de octubre de 2026)
 
 Sale de la revisión del código del 11 y el 12 de octubre sobre la rama `revision-2026-09` (commit `58a07e2`). Este repositorio se volvió a crear el 13/10 con la v0.3 como primer commit: la historia anterior, `58a07e2` incluido, solo está en la copia de Pablo. La versión del paquete pasa de 0.1.0, la que decían `pyproject.toml` y `tfmfdd/__init__.py`, a 0.3.0. Los identificadores entre paréntesis (B2, M7, DAT-5, H8…) remiten a la revisión del 27/09 (`docs/revision_2026-09-27.md` y `docs/revision_2026-09-27_agentes.md`), a la del 03/10 (informe 07, código) y a los informes de la revisión del 12/10.

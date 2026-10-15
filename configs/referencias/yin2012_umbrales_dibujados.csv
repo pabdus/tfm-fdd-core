@@ -1,6 +1,6 @@
 # Umbrales que Yin et al. (2012) dibujan (linea roja discontinua) en las Fig. 2 (p. 1573) y 5 (p. 1576).
 # Leidos de los vectores del PDF con umbrales_dibujados.py (ajuste lineal de las marcas del eje); 2026-10-12.
-# Lectura de Claude, pendiente de la verificacion de Pablo. Leer con pandas.read_csv(ruta, comment="#").
+# Lectura de Claude, comprobada por Pablo contra las Fig. 2 y 5 el 2026-10-14. Leer con pandas.read_csv(ruta, comment="#").
 pagina_impresa,figura,fallo,panel,metodo,estadistico,y_pdf,umbral_leido,unidades_por_punto,residuo_max_marcas,n_marcas
 1573,Fig. 2,16,(a) PCA,PCA,T2,115.951,22.41,1.191,0.0207,5
 1573,Fig. 2,16,(a) PCA,PCA,SPE,201.833,23.405,0.893,0.0201,7

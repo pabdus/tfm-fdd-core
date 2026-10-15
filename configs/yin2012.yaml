@@ -44,9 +44,10 @@
 referencia:
   tablas: referencias/yin2012_tablas_transcripcion.csv  # relativa a esta carpeta
   umbrales: referencias/yin2012_umbrales_dibujados.csv
-  transcripcion_verificada: null  # PENDIENTE. Fecha (AAAA-MM-DD) en que Pablo
-                           # comprobo contra el PDF las 42 FDR y 2 FAR de PCA y DPCA
-                           # de las Tablas 4 y 5 (configs/referencias/LEEME_...md)
+  transcripcion_verificada: "2026-10-14"  # Fecha (AAAA-MM-DD) en que Pablo comprobo
+                           # contra el PDF las Tablas 4, 5, 7 y 8 (las nueve columnas)
+                           # y los umbrales dibujados de las Fig. 2 y 5
+                           # (configs/referencias/LEEME_...md)
   tabla_fdr: 4             # Tabla 4, "FDRs (%) based on TE data sets given in [6]", p. 1574
   tabla_far: 5             # Tabla 5, "FARs (%) ...", p. 1574
 
@@ -101,12 +102,12 @@ supuestos:                 # lo que el articulo no dice (docs/verificacion_yin.m
                            # muestra el SPE no reproduce el umbral dibujado y con la
                            # corregida si (docs/verificacion_yin.md, S8; --solo-limites
                            # calcula la corregida)
-  S9_far_ventana: null     # PENDIENTE (decision de Pablo). Ventana de la FAR en
+  S9_far_ventana: [160, null]  # Decidido por Pablo el 14/10/2026. Ventana de la FAR en
                            # d00_te.dat, como far_window de metrics.evaluate_run: [inicio,
-                           # fin] en base cero, fin excluido, null = el final. Propuesta:
-                           # [160, null] (muestras 161 a 960): las 18 FAR de las Tablas 5
+                           # fin] en base cero, fin excluido, null = el final. Se eligio
+                           # [160, null] (muestras 161 a 960) porque las 18 FAR de las Tablas 5
                            # y 8 estan en la rejilla k/800 y solo 2 en la k/960
-                           # (docs/verificacion_yin.md, S9). Alternativas: [0, null] y
+                           # (docs/verificacion_yin.md, S9). Variantes informativas: [0, null] y
                            # [0, 800]
   S10_fdr_desde: 160       # FDR sobre las muestras 161 a 960 de cada dXX_te.dat (fallo a
                            # las 8 h = 160 muestras de 3 min, p. 1572; las 84 FDR de PCA y
@@ -144,7 +145,7 @@ variantes:                 # declaradas de antemano (docs/verificacion_yin.md, 3
   - nombre: S11_t2_dibujado_fig5
     cambios: {S11_t2_limite_dpca: dibujado_fig5}
 
-tolerancia:                # PENDIENTE: la fija Pablo antes de ejecutar (parrafo 355).
+tolerancia:                # Fijada por Pablo el 14/10/2026, antes de ejecutar (parrafo 355): opcion A.
                            # En puntos porcentuales, sobre los 18 fallos de los bloques 1
                            # y 2 (sin 3, 9 y 15). Las opciones del informe 15 (5.2) y de
                            # docs/verificacion_yin.md (7), traducidas a estas claves:
@@ -157,28 +158,29 @@ tolerancia:                # PENDIENTE: la fija Pablo antes de ejecutar (parrafo
                            # Un criterio que no se use se escribe "no_aplica" (null
                            # significa "sin decidir"). La FAR es obligatoria: la memoria
                            # pide reproducir la FDR por fallo y la FAR (parrafo 369).
-  comparacion: null        # "conteo": |alarmas nuestras - recuento de Yin| x 100 / n,
+  comparacion: conteo      # "conteo": |alarmas nuestras - recuento de Yin| x 100 / n,
                            # exacto (sus cifras son k/800 redondeadas a dos decimales);
                            # "impreso": |nuestra tasa - valor impreso|. Solo difieren en
                            # el borde del umbral (hasta 0,005 puntos)
-  fdr_umbral_por_fallo_pp: null
-  fdr_min_fallos_dentro: null
-  fdr_max_pp: null
-  fdr_media_max_pp: null
-  far_max_pp: null
-  dpca: null               # "criterio" (la misma regla que el PCA) o "descriptivo"
-                           # (diferencia por fallo, sin aprobado ni suspenso, mientras
-                           # S11 siga abierto; informe 15, 5.2)
+  fdr_umbral_por_fallo_pp: 0.5    # 4 muestras de 800
+  fdr_min_fallos_dentro: 18       # los 18 fallos de los bloques 1 y 2
+  fdr_max_pp: no_aplica
+  fdr_media_max_pp: no_aplica
+  far_max_pp: 0.5                 # 4 muestras de 800
+  dpca: descriptivo        # "criterio" (la misma regla que el PCA) o "descriptivo"
+                           # (diferencia por fallo, sin aprobado ni suspenso; informe 15,
+                           # 5.2). En esta verificacion el DPCA no pasa a tener veredicto
+                           # (docs/decisiones.md, fila del 2026-10-14)
 
 secundaria:                # Tablas 7 (p. 1576) y 8 (p. 1577): los mismos datos con otra
                            # configuracion (Tabla 6, p. 1575). Comprobacion secundaria:
                            # sale en filas aparte y sin veredicto
-  incluir: null            # PENDIENTE: true o false
+  incluir: true            # Decidido por Pablo el 14/10/2026: comprobacion informativa
   tabla_fdr: 7
   tabla_far: 8
   n_components:
     PCA: 17                # Tabla 6 (p. 1575): porcentaje de varianza, en torno al 90 %
-    DPCA: null             # PENDIENTE si incluir es true: la Tabla 6 dice 40 y el texto
+    DPCA: 40               # Decidido por Pablo el 14/10/2026. La Tabla 6 dice 40 y el texto
                            # 42 (p. 1575); docs/verificacion_yin.md (2.3) propone 40 y su
                            # apartado 10 dice como comprobar con d00.dat cuantas
                            # componentes da el 90 % de la varianza

@@ -434,10 +434,19 @@ def test_v1_huella_cambia_con_los_valores_y_las_referencias_no_con_los_comentari
     assert V1.huella(cfg, referencias) != base
 
 
-def test_v1_yaml_real_valido_y_con_decisiones_pendientes():
+def test_v1_yaml_real_valido_y_pendientes_en_una_copia():
+    # Desde el 2026-10-14 el yaml real tiene todas las decisiones fijadas (fila de
+    # esa fecha en docs/decisiones.md): es valido y no le queda nada pendiente.
     cfg = config.load_yaml(YIN_YAML)
     V1.validar_config(cfg)
-    faltan = V1.pendientes(cfg)
+    assert V1.pendientes(cfg) == []
+    # Si esas claves vuelven a null en una copia, V1 las da como pendientes.
+    copia = yaml.safe_load(YIN_YAML.read_text(encoding="utf-8"))
+    copia["supuestos"]["S9_far_ventana"] = None
+    copia["tolerancia"].update(comparacion=None, far_max_pp=None, dpca=None)
+    copia["referencia"]["transcripcion_verificada"] = None
+    copia["secundaria"]["incluir"] = None
+    faltan = V1.pendientes(copia)
     for clave in ("supuestos.S9_far_ventana", "tolerancia.comparacion", "tolerancia.far_max_pp",
                   "tolerancia.dpca", "referencia.transcripcion_verificada", "secundaria.incluir"):
         assert clave in faltan, clave
@@ -552,7 +561,8 @@ def test_v1_veredicto_la_far_cuenta():
 # ===================================================== V1: regla de orden
 
 def test_v1_se_niega_con_la_tolerancia_en_null(tmp_path, tep_sintetico, monkeypatch, capsys):
-    cfg = yaml.safe_load(YIN_YAML.read_text(encoding="utf-8"))       # el real: tolerancia en null
+    cfg = yaml.safe_load(YIN_YAML.read_text(encoding="utf-8"))
+    cfg["tolerancia"].update(comparacion=None, far_max_pp=None, dpca=None)  # el real ya la fija (2026-10-14)
     rutas = _repo_falso(tmp_path, cfg)
     _git_limpio(monkeypatch)
     llamadas = _espiar_cargas(monkeypatch)
@@ -697,8 +707,11 @@ def test_v1_solo_limites_no_abre_ficheros_de_prueba(tmp_path, monkeypatch):
     assert provenance.read_provenance(out / V1.SALIDA_LIMITES)["extra"]["modo"] == "solo_limites"
 
 
-def test_v1_huella_avisa_si_quedan_pendientes(capsys):
-    assert V1.ejecutar(["--config", str(YIN_YAML), "--huella"]) == 1
+def test_v1_huella_avisa_si_quedan_pendientes(tmp_path, capsys):
+    cfg = yaml.safe_load(YIN_YAML.read_text(encoding="utf-8"))
+    cfg["referencia"]["transcripcion_verificada"] = None     # el real ya no tiene pendientes (2026-10-14)
+    rutas = _repo_falso(tmp_path, cfg, fila=None)
+    assert V1.ejecutar(["--config", str(rutas["yaml"]), "--huella"]) == 1
     salida = capsys.readouterr().out
     assert "[V1-yin huella=" in salida and "pendientes" in salida
 
