@@ -2,6 +2,23 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
+## Sin publicar (16 de octubre de 2026)
+
+El piloto de la varianza (P1), que estima con las simulaciones de desarrollo 1 a 20 la sigma de la ventaja del autoencoder frente a PCA y DPCA en los fallos 3, 9 y 15 para la regla de n (fila 29 de `docs/decisiones.md`). No cambia el código de `tfmfdd/`.
+
+- `experiments/P1_piloto_varianza.py`, nuevo. Recoge la revisión del 15/10:
+  - la ejecución que cuenta exige, además de sus seis claves, los cinco `limites_protocolo.*` y `particion.rieth.normales_parada` (fila 29: corre con las decisiones ya fijadas). Solo una ejecución provisional sigue sin ellos, con los límites de desarrollo (`pca.*`) y la parada del C00, y lo deja dicho en el CSV;
+  - las normales de `train_fault00` se reparten una sola vez en entrenar, parar y calibrar, como en el C00 (con 14 de ajuste, 4 de parada y 6 de calibración salen los mismos ids);
+  - lee en `limit_source_` de dónde sale cada límite que usa y avisa cuando no sale de las normales reservadas (un límite paramétrico, como el T² por F);
+  - registra en cada fila el nivel de cada límite (el mismo alpha, o Sidak en la regla T² o SPE) y el orden del escalado del DPCA (escalar y retardar, o retardar y escalar). Para el orden usa los nombres que ya tiene `configs/yin2012.yaml` (S5: `escalar_y_retardar` o `retardar_y_escalar`); para el nivel, `mismo_alpha` o `sidak`, una propuesta que se confirma al fijar la clave;
+  - el intervalo de Hodges-Lehmann va al 90 %, el nivel del contraste de la fila 27;
+  - antes de abrir ningún Parquet compara sus bytes con los de `SHA256SUMS.txt` y se niega si no coinciden. La SHA-256 no se recalcula: se toma del manifiesto y se llama `sha256_segun_manifiesto`;
+  - una ejecución provisional escribe por defecto en `results/raw/P1_provisional`, que git no versiona, y se niega a escribir en `results/summary`;
+  - `--epocas-max` tiene que ser al menos 1.
+- `tests/test_p1_piloto_varianza.py`, nuevo: 25 pruebas con Parquet sintéticos, sin datos reales. Las tres que entrenan el autoencoder se saltan si PyTorch no está instalado.
+
+**Qué resultados quedan afectados:** ninguno. El piloto no ha corrido todavía con las decisiones fijadas: corre después de la etiqueta del prerregistro, y su CSV se cita con su procedencia. La salida provisional del 15/10 no se versiona.
+
 ## Sin publicar (15 de octubre de 2026)
 
 Decisiones del prerregistro, primera tanda (filas del 2026-10-15 en `docs/decisiones.md`). No cambia el código de `tfmfdd/` ni el de `experiments/`.
