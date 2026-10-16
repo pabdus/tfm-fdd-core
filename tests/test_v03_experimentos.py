@@ -223,7 +223,7 @@ def test_config_get_no_tiene_valor_por_defecto():
 def test_config_require_dice_que_la_clave_esta_pendiente():
     cfg = config.load_baseline(BASELINE)
     with pytest.raises(ValueError, match="pendiente"):
-        config.require(cfg, "contrastes.delta.fdr")
+        config.require(cfg, "contrastes.delta.retardo_muestras")   # sigue en null (a una adenda)
 
 
 def test_baseline_alpha_contrastes_separado_del_nivel_de_confianza():
@@ -246,13 +246,39 @@ def test_baseline_decisiones_pendientes_estan_en_null():
     """Las decisiones de Pablo que piden los informes de la fase A existen y estan en null."""
     cfg = config.load_baseline(BASELINE)
     pendientes = set(config.pending(cfg))
-    for clave in ("contrastes.delta.fdr", "contrastes.delta.far", "contrastes.delta.retardo_muestras",
-                  "contrastes.delta.macro_f1", "deteccion.ventana_far_normal",
+    # Desde el 2026-10-15 (filas de esa fecha en docs/decisiones.md) ya no estan en null
+    # contrastes.delta.fdr, contrastes.delta.far, deteccion.ventana_far_normal ni
+    # datos.ids_confirmatorios: las comprueba la prueba siguiente.
+    for clave in ("contrastes.delta.retardo_muestras", "contrastes.delta.macro_f1",
                   "deteccion.falsas_alarmas_por_hora", "diagnostico.incluir_normal",
                   "deteccion.suelo.margen", "hipotesis.fallos_control", "robustez.niveles_deteccion",
-                  "robustez.niveles_diagnostico", "coste.maquina_referencia", "datos.ids_confirmatorios",
+                  "robustez.niveles_diagnostico", "coste.maquina_referencia",
                   "compromiso.deteccion", "particion.rieth.replicas_ajuste"):
         assert clave in pendientes, clave
+
+
+def test_baseline_decisiones_del_2026_10_15_tienen_valor():
+    """Filas del 2026-10-15 de docs/decisiones.md: siete claves fijadas y la regla de n."""
+    cfg = config.load_baseline(BASELINE)
+    assert config.get(cfg, "contrastes.delta.fdr") == 0.02
+    assert config.get(cfg, "contrastes.delta.far") == 0.005
+    assert config.get(cfg, "contrastes.lateralidad") == "dos_unilaterales"
+    assert config.get(cfg, "hipotesis.metrica_ventaja") == "exceso_far_gemela"
+    assert config.get(cfg, "hipotesis.mayor_es_mejor") is True
+    assert config.get(cfg, "deteccion.ventana_far_normal") == [160, None]
+    ids = config.get(cfg, "datos.ids_confirmatorios")
+    assert ids["no_mirado_segun"] == "test" and ids["seleccion"] == "ids_mas_altos"
+    regla = config.get(cfg, "datos.regla_n")
+    assert [p["n"] for p in regla["peldanos"]] == [100, 200, 400]
+    assert regla["peldanos"][0]["si_sigma_ref_menor_o_igual"] == 0.05
+    assert regla["peldanos"][1]["si_sigma_ref_menor_o_igual"] == 0.07
+    assert "si_sigma_ref_menor_o_igual" not in regla["peldanos"][2]
+    assert config.get(cfg, "datos.runs_finales") == regla["peldanos"][0]["n"]
+    pendientes = set(config.pending(cfg))
+    for clave in ("contrastes.delta.fdr", "contrastes.delta.far", "contrastes.lateralidad",
+                  "hipotesis.metrica_ventaja", "hipotesis.mayor_es_mejor",
+                  "deteccion.ventana_far_normal", "datos.ids_confirmatorios"):
+        assert clave not in pendientes, clave
 
 
 def test_baseline_no_cambia_ningun_valor_anterior():

@@ -38,25 +38,35 @@ contrastes:                # (v0.3)
                            # memoria los nombra distinto y fija este valor ("alfa = 0,05
                            # [...] fijada antes de ejecutar", parrafo 358; decisiones.md,
                            # 22/09). Se pasa como alpha= a las funciones de tfmfdd.stats
-  delta:                   # PENDIENTE. Diferencia minima relevante por metrica, en las
-                           # unidades de la metrica (fraccion para FDR y FAR, no puntos),
-                           # sobre la pseudomediana de Hodges-Lehmann de la diferencia
-                           # por simulacion (parrafo 368). La regla 8 de
-                           # reglas_de_medida.md cita una propuesta sin acordar (DIS-11)
-    fdr: null
-    far: null
-    retardo_muestras: null
-    macro_f1: null
-  lateralidad: null        # PENDIENTE. No superioridad con dos unilaterales al alfa
-                           # cada uno (lo implementado en stats.non_superiority_test, con
-                           # intervalo al 1 - 2 alfa) o un bilateral (imp_contrastes, H13)
+  delta:                   # Diferencia minima relevante por metrica, en las unidades de
+                           # la metrica (fraccion para FDR y FAR, no puntos), sobre la
+                           # pseudomediana de Hodges-Lehmann de la diferencia por
+                           # simulacion (parrafo 368). fdr y far: filas del 2026-10-15 de
+                           # docs/decisiones.md (hoja de decision del 15/10)
+    fdr: 0.02              # 2 puntos, sobre el exceso de la FDR (hipotesis.metrica_ventaja)
+    far: 0.005             # 0,5 puntos; exige una reserva de calibracion grande
+                           # (particion.rieth.normales_calibracion; informe 06, A2 y A3)
+    retardo_muestras: null # A UNA ADENDA (2026-10-15): el retardo se reporta descriptivo y
+                           # con censura; si se contrasta, delta en minutos, con el equipo
+    macro_f1: null         # A UNA ADENDA (2026-10-15): con la estimanda del OE2, antes de
+                           # sus confirmatorios
+  lateralidad: dos_unilaterales  # (2026-10-15) dos unilaterales al alfa_contrastes cada
+                           # uno, intervalo de Hodges-Lehmann al 1 - 2 alfa (lo implementado
+                           # en stats.non_superiority_test); la refutacion lleva Holm y el
+                           # apoyo exige las seis (hypothesis_verdict). La otra opcion era
+                           # bilateral (cada cola al 2,5 %, intervalo al 95 %)
   no_contrastables: null   # PENDIENTE. Comparaciones sin diferencias no nulas: cuentan
                            # en Holm con p = 1 (lo implementado) o salen de la familia
 
-hipotesis:                 # PENDIENTE: familia confirmatoria (parrafos 348, 349 y 368)
-  metrica_ventaja: null    # FDR, exceso de la FDR sobre la FAR de la misma simulacion,
-                           # o FDR a FAR igualada (imp_contrastes, decisiones 1 y 2)
-  mayor_es_mejor: null     # sentido de la ventaja en esa metrica (higher_is_better)
+hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); las claves
+                           # en null siguen PENDIENTES
+  metrica_ventaja: exceso_far_gemela  # (2026-10-15) FDR de la simulacion con fallo
+                           # (muestras 161 a 960) menos la FAR de su gemela normal de
+                           # test_fault00 (mismo simulationRun, ventana de
+                           # deteccion.ventana_far_normal). Las otras opciones (fdr,
+                           # fdr_a_far_igualada) quedan como descriptivas
+                           # (imp_contrastes, decisiones 1 y 2)
+  mayor_es_mejor: true     # (2026-10-15) sentido de la ventaja (higher_is_better)
   baselines: null          # que son "PCA" y "DPCA" en la familia: estadistico (T2, SPE
                            # o la regla T2 o SPE), retardos del DPCA y limite (DIS-10)
   fallos_control: null     # fallos en los que se espera deteccion (parrafo 368), con la
@@ -66,11 +76,12 @@ hipotesis:                 # PENDIENTE: familia confirmatoria (parrafos 348, 349
                            # antes de los experimentos confirmatorios (parrafos 349, 368)
 
 deteccion:                 # (v0.3)
-  ventana_far_normal: null # PENDIENTE. Ventana de la FAR en las simulaciones normales,
+  ventana_far_normal: [160, null]  # (2026-10-15) muestras 161 a 960 de test_fault00,
                            # con el formato de far_window de metrics.evaluate_run:
                            # [inicio, fin] en base cero, fin excluido, null = el final.
-                           # DIS-2 y el informe 06 proponen [160, null] (muestras 161 a
-                           # 960 de test_fault00); hoy A0 y A1 usan la serie entera
+                           # La misma ventana de la verificacion frente a Yin (DIS-2;
+                           # informe 06). A0 y A1 (TEP clasico, desarrollo) siguen con
+                           # la serie entera
   falsas_alarmas_por_hora: null  # PENDIENTE. Unidad de la memoria (parrafo 361):
                            # "muestras" (metrics.false_alarm_samples_per_hour) o
                            # "episodios" (metrics.false_alarm_episodes_per_hour)
@@ -110,12 +121,29 @@ particion:
 datos:
   fuente: classic           # classic | rieth
   runs_desarrollo: 20
-  runs_finales: 100
+  runs_finales: 100         # primer peldano de datos.regla_n (2026-10-15)
   fault_onset_test: 160
-  ids_confirmatorios: null  # (v0.3) PENDIENTE. Procedimiento escrito para elegir los
-                            # ids de prueba confirmatorios, los mismos en los tres
-                            # bloques, y que ficheros cuentan como "no mirados" (regla 3;
-                            # data.seen_runs, data.unseen_runs, imp_datos decision 2)
+  regla_n:                  # (2026-10-15) numero de simulaciones de prueba confirmatorias
+                            # por fallo: regla prerregistrada, no un numero fijo (fila
+                            # de esa fecha en docs/decisiones.md)
+    piloto: experiments/P1_piloto_varianza.py  # con las simulaciones 1 a 20, despues de
+                            # la etiqueta y antes de cualquier ejecucion confirmatoria
+    sigma_ref: max_sigma_upper_95  # maximo, en las seis celdas, de la cota superior
+                            # unilateral al 95 % de sigma (columna sigma_upper de P1)
+    peldanos:               # el primero cuyo umbral cumpla sigma_ref; el ultimo, sin umbral;
+                            # sqrt(n) / sigma_ref >= 200 en cada peldano hasta 0,10
+      - {n: 100, si_sigma_ref_menor_o_igual: 0.05}
+      - {n: 200, si_sigma_ref_menor_o_igual: 0.07}
+      - {n: 400}            # si sigma_ref > 0,10, el capitulo 4 declara la potencia
+    tope: ids_libres        # n nunca supera los ids libres de datos.ids_confirmatorios
+  ids_confirmatorios:       # (2026-10-15) procedimiento (regla 3; fila de esa fecha)
+    no_mirado_segun: test   # cuentan los 21 ficheros de prueba: data.unseen_runs("test");
+                            # los de entrenamiento con fallo solo ajustan el diagnostico
+    seleccion: ids_mas_altos  # los n ids mas altos de esa lista (n de datos.regla_n),
+                            # los mismos en los tres bloques y en todas las clases
+    normales_de: unseen_train_fault00  # ajuste y calibracion: data.unseen_runs("train", 0)
+                            # con el reparto de particion.rieth. Antes de la etiqueta se
+                            # cierra RIETH_SEEN_PENDING (prefijos del C00) en el registro
   tramo_copiado: null       # (v0.3) PENDIENTE. Tramo de Rieth que sigue siendo copia de
                             # la gemela tras el inicio nominal: medirlo, declararlo o
                             # descartarlo, igual en los tres bloques (regla 6;

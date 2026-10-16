@@ -2,6 +2,15 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
+## Sin publicar (15 de octubre de 2026)
+
+Decisiones del prerregistro, primera tanda (filas del 2026-10-15 en `docs/decisiones.md`). No cambia el código de `tfmfdd/` ni el de `experiments/`.
+
+- `configs/baseline.yaml` y su copia `tfmfdd/configs/baseline.yaml`: la métrica de la ventaja (exceso de la FDR sobre la FAR de la gemela normal, mayor es mejor), delta de la FDR (0,02) y de la FAR (0,005), la lateralidad (dos unilaterales al 5 %), la ventana de la FAR en Rieth ([160, null]), el procedimiento de los ids confirmatorios y la regla prerregistrada del número de simulaciones (`datos.regla_n`: 100, 200 o 400 según la sigma del piloto, con tope en los ids libres). Los delta del retardo y de la macro-F1 siguen en null: van a una adenda.
+- `tests/test_v03_experimentos.py`: las dos pruebas que exigían esas claves en null usan ahora las que siguen en null, y una prueba nueva comprueba que el yaml real las fija. El piloto (`experiments/P1_piloto_varianza.py`) y sus pruebas van en un commit aparte.
+
+**Qué resultados quedan afectados:** ninguno todavía. A0 y A1 (TEP clásico) siguen con la serie entera para la FAR y son de desarrollo. El piloto P1 corre con estas claves en cuanto se fijen `hipotesis.baselines` y `particion.rieth.*`.
+
 ## Sin publicar (14 de octubre de 2026)
 
 Cierre de la configuración de la verificación frente a Yin et al. (2012). No cambia el código de `tfmfdd/` ni el de `experiments/`.
