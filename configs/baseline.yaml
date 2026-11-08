@@ -220,7 +220,7 @@ particion:
   rieth:                    # (2026-10-18) simulaciones normales de train_fault00 por
                             # replica de ajuste (M15 de rev_trazabilidad); los ids, en
                             # configs/referencias/rieth_ids_prerregistro.csv
-    normales_ajuste: 14     # para ajustar PCA y DPCA; el autoencoder entrena con 10
+    normales_ajuste: 14     # para ajustar PCA, DPCA y KPCA; el autoencoder entrena con 10
     normales_parada: 4      # de las de ajuste, para la parada temprana del autoencoder
                             # (el reparto del C00, celda 35)
     normales_calibracion: 20  # para calibrar los limites (otras que las del ajuste):
@@ -303,6 +303,42 @@ limites_protocolo:          # (2026-10-18) Los valores de pca de arriba son los 
                             # retardar (gancho scaler=); el orden de Yin et al. (2012,
                             # p. 1570) y de la configuracion principal de V1 (imp_monitor,
                             # decision 7)
+
+kpca:                       # (2026-11-04) configuracion del KPCA de compromiso.deteccion: la
+                            # adenda que pide la fila del 2026-11-04 que precisa el compromiso
+                            # (acta del 26/10, secciones 17 a 22). Elegida solo con normales de
+                            # desarrollo, sin fallos del TEP y sin margen de eleccion (regla
+                            # 12). Se aplica en cada replica de particion.rieth.reparto
+  nucleo: rbf               # k(x, y) = exp(-||x - y||^2 / c), sobre las 52 variables
+                            # estandarizadas con las normales de ajuste de la replica
+                            # (preprocessing.Scaler, regla 2). En la notacion exp(-||x - y||^2 /
+                            # (2 sigma^2)), c = 2 sigma^2
+  ancho: mediana_d2         # c = mediana de ||x_i - x_j||^2 sobre los pares i < j de las 7000
+                            # muestras de ajuste de la replica, ya estandarizadas, sin factor 2.
+                            # En las dos replicas de desarrollo, 97,8 y 98,3; el nucleo vale
+                            # e^-1 en el par tipico (Revisiones_E2/Decision_KPCA_Ancho_04nov/)
+  ancho_sensibilidad: 520.0 # brazo declarado fuera del criterio: c = 10 x 52 (Lee et al., 2004,
+                            # p. 228, con datos estandarizados), mucho mas cerca del lineal.
+                            # Mismo estadistico, componentes, submuestreo y limite. Se reporta
+                            # al lado del principal, por replica, con las metricas del criterio,
+                            # de forma descriptiva (sin contraste ni Holm), y no cambia el
+                            # criterio aunque salga mejor
+  estadistico: spe          # el SPE del espacio de caracteristicas, ||Phi(x) - Phi_p(x)||^2
+                            # (Lee et al., 2004, p. 227), calculado entero: k~(x, x) menos la
+                            # suma de t_i^2 en los p componentes, con k~(x, x) = 1 - (2/N) sum_j
+                            # k(x, x_j) + media(K) (el SPE_f de Choi et al., 2005), sin la
+                            # aproximacion de Lee que lo trunca en los n autovalores no nulos
+                            # (ec. 20). El T2 y la regla T2 o SPE, solo en la figura, como los
+                            # de PCA y DPCA
+  componentes: pca.variance # el primer p cuya varianza acumulada (autovalores del nucleo
+                            # centrado, de mayor a menor y con los negativos numericos a 0)
+                            # llega a pca.variance, sin pasar del numero de autovalores, como en
+                            # PCAMonitor. En desarrollo, 544 y 555 (35 con el brazo)
+  submuestreo: ninguno      # las 7000 muestras de las 14 normales de ajuste, las del PCA
+  limite: limites_protocolo # cuantil empirico (spe_method, quantile_method) a protocolo.alpha
+                            # del SPE de las 20 normales de calibracion de la replica
+                            # (limits.limit_empirical); en la regla T2 o SPE de la figura,
+                            # nivel_por_estadistico
 
 ablaciones:                 # (v0.3) Prerregistro de las cuatro ablaciones sobre Rieth
                             # (parrafos 355 y 367; informe 06, 2.1 a 2.4). familia_holm y
@@ -400,20 +436,18 @@ compromiso:                 # (2026-11-03, precisado el 2026-11-04) criterio de 
   deteccion:                # familias 1 y 3
     candidatos:             # lista cerrada, una configuracion por metodo: la de la hipotesis
                             # para PCA, DPCA y el autoencoder; el KPCA, que no esta en ella, con
-                            # la suya. Los cuatro se ajustan y calibran en cada replica de
-                            # particion.rieth.reparto y evaluan su grupo de prueba. La lista
-                            # solo cambia con una adenda con fecha y etiqueta antes de la
-                            # primera ejecucion confirmatoria de deteccion; lo que se ejecute
+                            # la del bloque kpca. Los cuatro se ajustan y calibran en cada
+                            # replica de particion.rieth.reparto y evaluan su grupo de prueba.
+                            # La lista solo cambia con una adenda con fecha y etiqueta antes de
+                            # la primera ejecucion confirmatoria de deteccion; lo que se ejecute
                             # fuera de ella se reporta fuera del criterio. El T2 y la regla T2 o
                             # SPE de PCA y DPCA, solo en la figura
       - {nombre: pca, familia: 1}   # hipotesis.baselines (el SPE)
       - {nombre: dpca, familia: 1}  # hipotesis.baselines (el SPE, con 2 retardos)
-      - {nombre: kpca, familia: 1}  # sin codigo todavia. Su configuracion (nucleo RBF, sigma,
-                            # componentes, submuestreo y estadistico, el T2 o el SPE del espacio
-                            # de caracteristicas), o un procedimiento que la elija solo con
-                            # normales de entrenamiento y validacion sin margen de eleccion
-                            # (regla 12), va en una adenda con fecha y etiqueta antes de la
-                            # primera ejecucion confirmatoria de deteccion
+      - {nombre: kpca, familia: 1}  # sin codigo todavia; su configuracion, en el bloque kpca
+                            # (adenda del 2026-11-04, antes de la primera ejecucion
+                            # confirmatoria de deteccion). Su brazo de sensibilidad
+                            # (kpca.ancho_sensibilidad) va fuera del criterio
       - {nombre: ae, familia: 3}    # el autoencoder del OE3, el de la hipotesis
     eliminacion: frente_a_cualquiera_con_holm  # la regla de arriba (2026-11-03)
     restricciones:
@@ -451,8 +485,8 @@ compromiso:                 # (2026-11-03, precisado el 2026-11-04) criterio de 
 coste:                      # (v0.3) PENDIENTE (parrafo 369; tfmfdd.cost.measure_cost). El
                             # tiempo de inferencia por muestra en linea lo usa compromiso.*
                             # (2026-11-03), con batch_size = 1: el procedimiento (con que
-                            # replica y que datos se mide; el coste del KPCA depende de su
-                            # submuestreo) se fija antes de medirlo
+                            # replica y que datos se mide; el KPCA va sin submuestreo,
+                            # kpca.submuestreo) se fija antes de medirlo
   maquina_referencia: null
   hilos_blas: null
   hilos_torch: null

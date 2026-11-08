@@ -2,6 +2,19 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
+## Sin publicar (adenda de la configuración del KPCA, 4 de noviembre de 2026)
+
+La configuración del KPCA de la lista cerrada de `compromiso.deteccion` (fila del 2026-11-04 de esa configuración en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 17 a 22). Va después del commit de la tercera tanda de decisiones, con su propia etiqueta. No cambia ningún cálculo: en `tfmfdd/` solo cambia la copia del yaml.
+
+- `configs/baseline.yaml` y su copia: el bloque nuevo `kpca`, con valor (núcleo `rbf`; ancho `mediana_d2`, la mediana de las distancias al cuadrado entre las 7.000 muestras de ajuste de la réplica; `ancho_sensibilidad` 520, un brazo fuera del criterio; estadístico `spe`, calculado entero; componentes `pca.variance`; submuestreo `ninguno`; límite `limites_protocolo`), y los comentarios de la entrada `kpca` de la lista y de `coste`. Siguen 30 claves en null.
+- `docs/decisiones.md`: una fila y el recuento, que ya no da la configuración del KPCA por pendiente.
+- `docs/reglas_de_medida.md`: la regla 8 (la configuración del KPCA en el compromiso).
+- `configs/baseline.yaml` y su copia, además: el comentario de `particion.rieth.normales_ajuste` nombra el KPCA.
+- `docs/reglas_de_medida.md`, regla 13: quedan tres pendientes que no son claves (la unidad del OE2, los brazos del factor 1 en el autoencoder y qué análisis de sensibilidad del Wilcoxon se declara).
+- Pruebas: `tests/test_adenda_kpca_04nov.py`, nuevo (el bloque en los dos yaml, las claves a las que remite, las reglas del ancho, de los componentes y del SPE escritas como referencia para el código que venga, y el formato del registro y del yaml).
+
+**Qué resultados quedan afectados:** ninguno, porque no han corrido ejecuciones confirmatorias y el KPCA no tiene código todavía. Ese código tiene que leer el bloque con `config.require` y no copiar sus valores. Antes de la primera ejecución confirmatoria de detección siguen pendientes el δ del retardo, `coste.*`, confirmar `protocolo.min_fdr` y `protocolo.retardo_convencion`, y la etiqueta que deja fechada esta adenda.
+
 ## Sin publicar (decisiones del 26 de octubre al 4 de noviembre de 2026)
 
 Decisiones del prerregistro, tercera tanda (filas del 2026-10-26 al 2026-11-04 en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 4 a 16). Va después del commit de la tabla de ventajas publicadas. No cambia ningún cálculo: en `tfmfdd/` cambian la copia del yaml y seis docstrings.
