@@ -250,14 +250,19 @@ def test_baseline_decisiones_pendientes_estan_en_null():
     # contrastes.delta.fdr, contrastes.delta.far, deteccion.ventana_far_normal ni
     # datos.ids_confirmatorios, y desde el 2026-10-18 tampoco deteccion.suelo.*,
     # hipotesis.fallos_control ni particion.rieth.*: las comprueban las pruebas siguientes.
-    # Desde el 2026-10-26 tampoco hipotesis.tabla_ventajas_publicadas (tests/test_ventajas_publicadas.py).
+    # Desde el 2026-10-26 tampoco hipotesis.tabla_ventajas_publicadas (tests/test_ventajas_publicadas.py),
+    # ni, del 26 al 29/10, las seis de tests/test_decisiones_26_29oct.py, ni, desde el 03/11,
+    # compromiso.deteccion y compromiso.diagnostico, salvo la lista de candidatos del
+    # diagnostico (compromiso.diagnostico.candidatos, nueva en null). Desde el 04/11, tampoco
+    # las tres claves del OE3 (deteccion.mediana_retardo, falsas_alarmas_por_hora y
+    # pr_auc_conjunto).
     for clave in ("contrastes.delta.retardo_muestras", "contrastes.delta.macro_f1",
-                  "deteccion.falsas_alarmas_por_hora", "diagnostico.incluir_normal",
-                  "datos.tramo_copiado", "robustez.niveles_deteccion",
+                  "coste.batch_size", "diagnostico.etiqueta_prefallo",
+                  "ablaciones.metrica_principal.factor2", "robustez.niveles_deteccion",
                   "robustez.niveles_diagnostico", "coste.maquina_referencia",
-                  "compromiso.deteccion", "ablaciones.unidad_replica"):
+                  "ablaciones.estimanda_factor3", "compromiso.diagnostico.candidatos"):
         assert clave in pendientes, clave
-    assert len(pendientes) == 40                   # 56 el 2026-10-15; 15 fijadas del 18 al 21/10; la tabla, el 26/10
+    assert len(pendientes) == 30                   # 56 el 2026-10-15; 15 del 18 al 21/10; la tabla, el 26/10; 6 del 26 al 29/10; 2 el 03/11 y 1 nueva; 3 el 04/11
     assert "hipotesis.tabla_ventajas_publicadas" not in pendientes
 
 

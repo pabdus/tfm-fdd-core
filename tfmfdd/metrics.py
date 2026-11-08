@@ -139,9 +139,9 @@ def false_alarm_samples_per_hour(statistic: np.ndarray, limit: float,
     primera: cuenta MUESTRAS en alarma. Es la FAR por muestra pasada a tiempo,
     FAR * 60 / sample_minutes: con muestreo de 3 minutos hay 20 muestras por
     hora, asi que una FAR del 1 % son 0,2 muestras en alarma por hora. La otra
-    unidad, episodios por hora, esta en `false_alarm_episodes_per_hour`. Cual
-    de las dos se reporta lo decide el equipo; aqui solo se calculan, cada una
-    con su nombre.
+    unidad, episodios por hora, esta en `false_alarm_episodes_per_hour`. El
+    protocolo reporta los episodios (`deteccion.falsas_alarmas_por_hora`, fila
+    del 2026-11-04); aqui se calculan las dos, cada una con su nombre.
 
     Se aplica a un tramo sano (el anterior al fallo o una simulacion normal
     entera). Las horas son las de las muestras evaluadas (sin NaN). Devuelve
@@ -434,8 +434,10 @@ def pr_auc(scores: np.ndarray, labels: np.ndarray) -> float:
     muestras positivas), no 0,5 como en la ROC-AUC. En un fichero de prueba del
     TEP 800 de las 960 muestras tienen fallo, asi que una puntuacion sin
     informacion ya da una PR-AUC del orden de 800/960. Hay que informar de la
-    prevalencia al lado y decidir antes de medir que muestras forman el
-    conjunto (una simulacion, o el pool de simulaciones normales y con fallo).
+    prevalencia al lado. El conjunto del protocolo (`deteccion.pr_auc_conjunto`,
+    fila del 2026-11-04) es por simulacion: las muestras 161 a 960 del fichero
+    con fallo frente a las mismas de su gemela de test_fault00, con prevalencia
+    del 50 %.
 
     Parametros
     ----------
@@ -525,8 +527,8 @@ def aggregate(df: pd.DataFrame, by: str | list[str] = "faultNumber", ci: float =
       fallo evaluado, contando las que no tienen deteccion valida como
       censuradas al final del tramo (retardo mayor que cualquiera observado).
       Si la mitad o mas no tienen deteccion valida, la censurada es infinita:
-      la mediana no se alcanza dentro de la ventana. Cual se reporta lo decide
-      el equipo (DIS-12).
+      la mediana no se alcanza dentro de la ventana. El protocolo reporta la
+      censurada (`deteccion.mediana_retardo`, fila del 2026-11-04; DIS-12).
     - Los intervalos (t de Student) se recortan al rango de cada metrica:
       [0, 1] para FAR, FDR y sus mitades, [-1, 1] para persistence_gap y
       [0, inf) para retardos y falsas alarmas por hora. Como la media verdadera
@@ -765,8 +767,9 @@ def diagnosis_metrics(y_true: np.ndarray, y_pred: np.ndarray, *, include_normal:
         Clase real y predicha de cada muestra de toda la prueba.
     include_normal : bool
         Si la clase normal entra en el promedio de la macro-F1. Sin valor por
-        defecto a proposito: es una decision pendiente del equipo y cambia la
-        cifra. El F1 de la clase normal se calcula y se devuelve siempre.
+        defecto a proposito: cambia la cifra, y el protocolo lo fija en
+        diagnostico.incluir_normal (false desde el 2026-10-26). El F1 de la
+        clase normal se calcula y se devuelve siempre.
     normal_label : int
         Etiqueta de la clase normal (0 en el TEP).
     labels : lista, opcional
@@ -893,7 +896,8 @@ def macro_f1_by_replicate(y_true: np.ndarray, y_pred: np.ndarray, replicates: np
         simulaciones). Sin NaN.
     include_normal : bool
         Si la clase normal entra en la macro-F1 (ver diagnosis_metrics). Sin
-        valor por defecto: es una decision pendiente del equipo.
+        valor por defecto: el protocolo lo fija en diagnostico.incluir_normal
+        (false desde el 2026-10-26).
     normal_label, hard_faults : como en diagnosis_metrics.
     labels : lista, opcional
         Clases que se promedian, las mismas en todas las replicas. Por defecto,

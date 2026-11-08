@@ -801,10 +801,11 @@ def effective_onset(fault_df: pd.DataFrame, normal_df: pd.DataFrame, onset: int)
     16 a 18 y 20) la copia exacta sigue bastantes muestras despues del inicio
     (informe 11 de la revision del 03/10, B.5; DAT-1). Esas filas llevan la
     etiqueta del fallo pero son identicas a la clase 0: ningun detector puede
-    distinguirlas, y fijan un suelo al retardo y un techo a la FDR. Si ese
-    tramo se mide, se declara o se descarta lo decide el registro de decisiones
-    (regla 6); esta funcion da el numero, para que los tres bloques lo hagan
-    igual.
+    distinguirlas, y fijan un suelo al retardo y un techo a la FDR. El
+    registro decidio (datos.tramo_copiado, 2026-10-26) no descartarlo: las
+    metricas se miden desde el inicio nominal, y esta funcion da el numero que
+    se guarda y se reporta (copied_after_onset), para que los tres bloques lo
+    hagan igual (regla 6).
 
     Compara las 52 variables con igualdad exacta (los valores son los del
     Parquet; float32 frente a float32, o frente a float64, es exacto).
@@ -839,7 +840,8 @@ def effective_onset(fault_df: pd.DataFrame, normal_df: pd.DataFrame, onset: int)
         separates           False si no se separa de su gemela en ninguna
                             muestra.
 
-    Para descartar el tramo copiado, igual en todos los bloques:
+    Para descartar el tramo copiado (no es lo que hace el protocolo desde el
+    2026-10-26, ver datos.tramo_copiado), igual en todos los bloques:
 
         ef = effective_onset(fallo, normal, fault_onset("test", "rieth"))
         fallo = fallo.merge(ef[["faultNumber", "simulationRun", "effective_onset"]],

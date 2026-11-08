@@ -25,12 +25,16 @@ protocolo:
   min_fdr: 0.10            # (v0.3) FDR por debajo de la cual una racha de k alarmas
                            # se marca como al azar (detected_at_chance) y su retardo no
                            # se interpreta. Convencion de decisiones.md (22/09); hasta
-                           # ahora solo estaba como valor por defecto en el codigo
+                           # ahora solo estaba como valor por defecto en el codigo. Cambia el
+                           # retardo de compromiso.deteccion: se confirma o cambia antes de la
+                           # primera ejecucion confirmatoria de deteccion (2026-11-03)
   retardo_convencion: appearance  # (v0.3) retardo = primera alarma de la primera
                            # racha de k: "la primera de una serie de tres alarmas
                            # seguidas" (memoria, parrafo 276), y retardo nulo si salta
                            # en la muestra 161 (parrafo 289). La otra opcion de
-                           # metrics.detection_delay es "confirmation"
+                           # metrics.detection_delay es "confirmation". Como min_fdr, se
+                           # confirma o cambia antes de la primera ejecucion confirmatoria de
+                           # deteccion (compromiso.deteccion, 2026-11-03)
 
 contrastes:                # (v0.3)
   alpha_contrastes: 0.05   # alfa de los contrastes (Wilcoxon pareado con Holm). NO es
@@ -40,23 +44,33 @@ contrastes:                # (v0.3)
                            # 22/09). Se pasa como alpha= a las funciones de tfmfdd.stats
   delta:                   # Diferencia minima relevante por metrica, en las unidades de
                            # la metrica (fraccion para FDR y FAR, no puntos), sobre la
-                           # pseudomediana de Hodges-Lehmann de la diferencia por
-                           # simulacion (parrafo 368). fdr y far: filas del 2026-10-15 de
+                           # pseudomediana de Hodges-Lehmann de la diferencia por unidad
+                           # de analisis (parrafo 368). En Rieth la unidad es la replica,
+                           # en la familia de la hipotesis y en el factor 1, y la
+                           # diferencia es la media de sus simulaciones de prueba
+                           # (hipotesis.unidad_replica, 2026-11-03; ablaciones.unidad_replica,
+                           # 2026-10-28). fdr y far: filas del 2026-10-15 de
                            # docs/decisiones.md (hoja de decision del 15/10)
     fdr: 0.02              # 2 puntos, sobre el exceso de la FDR (hipotesis.metrica_ventaja)
     far: 0.005             # 0,5 puntos; exige una reserva de calibracion grande
                            # (particion.rieth.normales_calibracion; informe 06, A2 y A3)
     retardo_muestras: null # A UNA ADENDA (2026-10-15): el retardo se reporta descriptivo y
-                           # con censura; si se contrasta, delta en minutos, con el equipo
+                           # con censura; si se contrasta, delta en minutos, con el equipo.
+                           # Lo usa compromiso.deteccion (2026-11-03), en muestras: el delta
+                           # en minutos entre protocolo.sample_minutes (3). Se fija antes de
+                           # la primera ejecucion confirmatoria de deteccion, con anclas
+                           # externas y declarando los retardos de desarrollo que ya se
+                           # vieron, en una adenda con fecha y etiqueta
     macro_f1: null         # A UNA ADENDA (2026-10-15): con la estimanda del OE2, antes de
-                           # sus confirmatorios
+                           # sus confirmatorios. Lo usa compromiso.diagnostico (2026-11-03)
   lateralidad: dos_unilaterales  # (2026-10-15) dos unilaterales al alfa_contrastes cada
                            # uno, intervalo de Hodges-Lehmann al 1 - 2 alfa (lo implementado
                            # en stats.non_superiority_test); la refutacion lleva Holm y el
                            # apoyo exige las seis (hypothesis_verdict). La otra opcion era
                            # bilateral (cada cola al 2,5 %, intervalo al 95 %)
   no_contrastables: cuentan_con_p_1  # (2026-10-18) comparaciones no contrastables (menos
-                           # de 5 simulaciones validas, stats.MIN_PAIRS, o sin datos):
+                           # de 5 unidades validas, simulaciones o replicas segun el
+                           # diseno, stats.MIN_PAIRS, o sin datos):
                            # cuentan en Holm con p = 1, asi que m es el de la familia
                            # declarada, y nunca apoyan (lo implementado en
                            # hypothesis_verdict, compare_arms y compare_methods con la
@@ -72,6 +86,21 @@ hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); la
                            # fdr_a_far_igualada) quedan como descriptivas
                            # (imp_contrastes, decisiones 1 y 2)
   mayor_es_mejor: true     # (2026-10-15) sentido de la ventaja (higher_is_better)
+  unidad_replica:          # (2026-11-03) en Rieth, el diseno anidado del factor 1
+                           # (ablaciones.unidad_replica): la replica r de
+                           # particion.rieth.reparto ajusta PCA, DPCA y el autoencoder y
+                           # evalua solo su grupo r de simulaciones de prueba (los n mod R
+                           # que sobran no entran). En cada comparacion, paired_advantage
+                           # dentro del grupo, la media por replica y non_superiority_test
+                           # sobre las R medias; igual el suelo (detects_above_far sobre
+                           # las medias de fdr y de far), los controles, el analisis
+                           # secundario y published_advantage_test. Se reporta la
+                           # dispersion entre replicas (fila del 2026-11-03). El valor de
+                           # grupos_prueba es la ruta de la clave que da los grupos
+    diseno: anidado
+    unidad: replicate
+    grupos_prueba: ablaciones.unidad_replica.grupos_prueba  # los mismos grupos
+    agregado: media        # la ventaja de la replica: la media de las de sus simulaciones
   baselines:               # (2026-10-18) que son "PCA" y "DPCA" en la familia (DIS-10):
                            # el SPE, el error de reconstruccion de un autoencoder lineal,
                            # frente al del autoencoder; el DPCA con 2 retardos (V1, S6).
@@ -81,9 +110,10 @@ hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); la
     - {nombre: dpca, estadistico: spe, lags: 2}
   baselines_secundarios:   # (2026-10-18) analisis secundario declarado: las mismas seis
                            # comparaciones (autoencoder frente a PCA y DPCA en 3, 9 y 15)
-                           # con estos estadisticos, los mismos contrastes (fila 27) y el
-                           # mismo n, en una tabla aparte del capitulo 4 y FUERA del
-                           # veredicto. Con las mismas ejecuciones sale la descomposicion
+                           # con estos estadisticos, los mismos contrastes (fila 27), el
+                           # mismo n y la misma unidad (hipotesis.unidad_replica), en una
+                           # tabla aparte del capitulo 4 y FUERA del veredicto. Con las
+                           # mismas ejecuciones sale la descomposicion
                            # (AE - T2) = (AE - SPE) + (SPE - T2)
     baselines:
       - {nombre: pca_t2, estadistico: t2, lags: 0}
@@ -105,13 +135,15 @@ hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); la
                            # por encima de su FAR (deteccion.suelo); si alguno falla, el
                            # veredicto no puede ser "apoya"; los controles no entran en
                            # Holm ni refutan (hypothesis_verdict, punto 6). Son 8 entradas,
-                           # con las mismas simulaciones de prueba y el mismo n
+                           # con las mismas simulaciones de prueba, el mismo n y la misma
+                           # unidad (hipotesis.unidad_replica)
   tabla_ventajas_publicadas: configs/referencias/ventajas_publicadas.csv  # (2026-10-26)
                            # la tabla de ventajas publicadas, fijada antes de los
                            # experimentos confirmatorios (parrafos 349 y 368; filas del
                            # 2026-10-15 y del 2026-10-26). La condicion "menor que la
                            # publicada" se evalua frente a la fila papel_349 = comparadora
-                           # con stats.published_advantage_test y se reporta como
+                           # con stats.published_advantage_test, sobre las medias de replica
+                           # de hipotesis.unidad_replica, y se reporta como
                            # informacion (la diferencia con su intervalo): no entra en el
                            # veredicto. Ver configs/referencias/LEEME_ventajas_publicadas.md
 
@@ -122,17 +154,28 @@ deteccion:                 # (v0.3)
                            # La misma ventana de la verificacion frente a Yin (DIS-2;
                            # informe 06). A0 y A1 (TEP clasico, desarrollo) siguen con
                            # la serie entera
-  falsas_alarmas_por_hora: null  # PENDIENTE. Unidad de la memoria (parrafo 361):
-                           # "muestras" (metrics.false_alarm_samples_per_hour) o
-                           # "episodios" (metrics.false_alarm_episodes_per_hour)
-  mediana_retardo: null    # PENDIENTE. "condicionada" (delay_samples_median, sobre las
-                           # detecciones validas) o "censurada" (delay_samples_median_censored)
+  falsas_alarmas_por_hora: episodios  # (2026-11-04) la unidad del OE3 (parrafo 361):
+                           # metrics.false_alarm_episodes_per_hour. Una racha de al menos
+                           # protocolo.k_alarmas alarmas seguidas cuenta una vez, en
+                           # test_fault00 y en la ventana de la FAR
+                           # (deteccion.ventana_far_normal); se reporta con la FAR al lado. La
+                           # otra opcion era "muestras" (false_alarm_samples_per_hour, la FAR
+                           # por 20)
+  mediana_retardo: censurada  # (2026-11-04) la que se reporta y la que usa
+                           # compromiso.deteccion: delay_samples_median_censored de
+                           # metrics.aggregate. Las simulaciones sin deteccion valida (sin racha
+                           # o con racha al azar, protocolo.min_fdr) cuentan como mas tardias
+                           # que cualquier retardo observado, y si la mitad o mas no detectan
+                           # la mediana no se alcanza. La condicionada (delay_samples_median,
+                           # solo sobre las detecciones validas) y valid_detection_ratio van al
+                           # lado, como informacion. La otra opcion era "condicionada" (DIS-12)
   suelo:                   # (2026-10-18 y 2026-10-19) "Ninguno de los dos detecta el fallo
                            # por encima de su tasa de falsas alarmas" (parrafo 368):
                            # stats.detects_above_far. Una celda de la familia puede contar
                            # como apoyo si detecta al menos uno de los dos metodos
     margen: 0.01           # exceso minimo de la FDR sobre la FAR (pseudomediana de
-                           # fdr - far por simulacion): la FAR nominal, 1 - protocolo.alpha.
+                           # fdr - far por unidad; en Rieth, de las medias de replica,
+                           # hipotesis.unidad_replica): la FAR nominal, 1 - protocolo.alpha.
                            # Con ese exceso, la mitad de las alarmas durante el fallo se
                            # deben al fallo. Fijado sin mirar el piloto
     margen_sensibilidad: [0.0, 0.005, 0.02]  # el veredicto se reporta tambien con estos
@@ -146,16 +189,26 @@ deteccion:                 # (v0.3)
                            # apoyar
     min_simulaciones: 5    # stats.MIN_PAIRS: el minimo con que un Wilcoxon unilateral
                            # puede dar p <= 0,05 (1/2^5); el mismo umbral que
-                           # contrastes.no_contrastables
-  pr_auc_conjunto: null    # PENDIENTE. Que muestras forman el conjunto de la PR-AUC
-                           # (cada simulacion o un pool con test_fault00)
+                           # contrastes.no_contrastables. Cuenta unidades: en Rieth, las
+                           # replicas
+  pr_auc_conjunto: por_simulacion_con_gemela  # (2026-11-04) metrics.pr_auc por (fallo,
+                           # simulacion): positivas, las muestras 161 a 960 del fichero con
+                           # fallo; negativas, las mismas de su gemela de test_fault00
+                           # (deteccion.ventana_far_normal). Prevalencia fija del 50 %, que se
+                           # reporta al lado. En Rieth, si se contrasta, la media por replica
+                           # (hipotesis.unidad_replica). Las otras opciones eran el fichero con
+                           # fallo entero (prevalencia del 83 %) y un pool por fallo
 
 diagnostico:               # (v0.3)
-  incluir_normal: null     # PENDIENTE. Si la clase normal entra en la macro-F1
-                           # (include_normal de metrics.diagnosis_metrics); el mismo
-                           # valor en los tres bloques
+  incluir_normal: false    # (2026-10-26) la clase normal NO entra en el promedio de la
+                           # macro-F1 (include_normal de metrics.diagnosis_metrics): la
+                           # macro-F1 promedia los 20 fallos, y la F1 de la clase normal
+                           # se reporta aparte (per_class). El mismo valor en los tres
+                           # bloques
   etiqueta_prefallo: null  # PENDIENTE. Que se hace con las muestras previas al inicio
-                           # del fallo en el diagnostico (regla 6)
+                           # del fallo en el diagnostico (regla 6). Cambia la macro-F1 de
+                           # compromiso.diagnostico: se fija antes de la primera ejecucion
+                           # confirmatoria de diagnostico (2026-11-03)
 
 particion:
   fraccion_ajuste: 0.6
@@ -213,10 +266,13 @@ datos:
                             # con el reparto de particion.rieth. RIETH_SEEN_PENDING
                             # (prefijos del C00) se cerro el 2026-10-21 con el prefijo
                             # K = 30; los ids, en configs/referencias/rieth_ids_prerregistro.csv
-  tramo_copiado: null       # (v0.3) PENDIENTE. Tramo de Rieth que sigue siendo copia de
-                            # la gemela tras el inicio nominal: medirlo, declararlo o
-                            # descartarlo, igual en los tres bloques (regla 6;
-                            # data.effective_onset)
+  tramo_copiado: inicio_nominal_medido  # (2026-10-26) tramo de Rieth que sigue siendo
+                            # copia de la gemela tras el inicio nominal: no se descarta
+                            # ninguna fila y todas las metricas se miden desde el inicio
+                            # nominal, en los tres bloques y en las dos tareas; cada
+                            # ejecucion confirmatoria guarda copied_after_onset de
+                            # data.effective_onset por fallo y simulacion, y las tablas lo
+                            # reportan (regla 6)
 
 pca:
   variance: 0.85
@@ -248,31 +304,161 @@ limites_protocolo:          # (2026-10-18) Los valores de pca de arriba son los 
                             # p. 1570) y de la configuracion principal de V1 (imp_monitor,
                             # decision 7)
 
-ablaciones:                 # (v0.3) PENDIENTE. Prerregistro de las cuatro ablaciones
-                            # sobre Rieth (parrafos 355 y 367; informe 06, 2.1 a 2.4)
-  unidad_replica: null      # factor 1: la replica de ajuste como unidad, o la simulacion
-  familia_holm: null        # por factor (informe 06, opcion 1), global o sin contraste
-  regla_equivalencia: null  # cuando un efecto es "equivalente a cero" (parrafo 355), por
-                            # ejemplo, intervalo dentro de +-delta
+ablaciones:                 # (v0.3) Prerregistro de las cuatro ablaciones sobre Rieth
+                            # (parrafos 355 y 367; informe 06, 2.1 a 2.4). familia_holm y
+                            # regla_equivalencia valen para los cuatro factores; el factor
+                            # 1 se fijo del 2026-10-26 al 2026-10-29 (filas de esas fechas);
+                            # la metrica, los brazos, la unidad y la familia de los factores
+                            # 2 a 4 van en sus adendas
+  unidad_replica:           # (2026-10-28) factor 1: diseno anidado. Cada replica de ajuste
+                            # se evalua sobre su propio grupo de simulaciones de prueba,
+                            # disjunto de los de las demas, y el contraste es
+                            # stats.compare_arms(..., replicate_col=..., unit="replicate")
+    diseno: anidado
+    unidad: replicate
+    grupos_prueba: subsample_runs_disjunto  # ablation.subsample_runs(ids de
+                            # datos.ids_confirmatorios, n // R, R, protocolo.semilla,
+                            # disjoint=True), con los ids en orden creciente, como los da
+                            # data.unseen_runs, y no en el del CSV (2026-11-03); la replica
+                            # r de particion.rieth.reparto va con el grupo r (la fila r de
+                            # la salida), y los n mod R que sobran no entran en el factor 1.
+                            # Los ids son de simulationRun, comunes a todas las clases: las
+                            # gemelas van juntas
+  familia_holm: por_factor  # (2026-10-29) una familia por factor. En el factor 1, los 4
+                            # contrastes del brazo sucio principal (brazos_factor1) en la
+                            # FAR, para PCA y DPCA con T2 y SPE (compare_arms con
+                            # family=()); fuera de Holm, los brazos secundarios, la regla
+                            # T2 o SPE y las metricas exploratorias
+  regla_equivalencia: effect_test  # (2026-10-29) la de stats.effect_test, con el delta de
+                            # la metrica principal como margen (factor 1:
+                            # contrastes.delta.far): dos Wilcoxon unilaterales por
+                            # desenlace (sin empates, relevante si el intervalo al 95 % queda
+                            # fuera de +-delta y equivalente si el del 90 % queda dentro; si
+                            # no, inconcluso); Holm por separado a cada desenlace
   metrica_principal:
-    factor1: null
+    factor1: far            # (2026-10-29) FAR realizada en test_fault00, en
+                            # deteccion.ventana_far_normal: brazo en muestra menos brazo
+                            # reservado. FDR cruda, exceso y retardo, exploratorias
     factor2: null
     factor3: null
     factor4: null
   estimanda_factor3: null   # detectores: FAR externa u optimismo de la FAR interna
   brazo_sucio_factor2: null # S1 (ajuste y prueba juntos), S2 (cada simulacion con sus
                             # propios estadisticos) o los dos (parrafo 284)
+  brazos_factor1:           # (2026-10-29) PCA y DPCA (OE1); los del autoencoder, con las
+                            # claves del OE3
+    limpio: limites_protocolo  # cuantil empirico sobre las normales de calibracion
+    sucio_principal: en_muestra_mismo_estimador  # el mismo estimador sobre el estadistico
+                            # de las normales del ajuste (PCAMonitor.fit(...,
+                            # calibration="in_sample")); el unico en la regla y en Holm
+    secundarios: [t2_f, t2_beta, spe_jackson, reservada_14]  # exploratorios: la
+                            # configuracion de Yin et al. (2012) y el cuantil reservado con
+                            # las 14 de menor id de las 20 normales de calibracion de cada
+                            # replica (2026-11-03)
+    estadisticos: [t2, spe] # los del brazo principal y de Holm; la regla T2 o SPE
+                            # (sidak), exploratoria
 
-compromiso:                 # (v0.3) PENDIENTE. Criterio de mejor compromiso, uno para
-  deteccion: null           # la deteccion y otro para el diagnostico (parrafo 369)
-  diagnostico: null
+compromiso:                 # (2026-11-03, precisado el 2026-11-04) criterio de mejor
+                            # compromiso, uno por tarea (parrafos 342, 349 y 369), sobre una
+                            # lista cerrada de candidatos con su familia: restriccion y luego
+                            # orden, paso a paso. En deteccion, la unidad es la replica
+                            # (hipotesis.unidad_replica): cada metrica se calcula por replica
+                            # con sus simulaciones validas, y una replica sin ninguna sale; en
+                            # diagnostico, la unidad del diseno confirmatorio del OE2. La
+                            # restriccion, sobre la media de las unidades redondeada a 6
+                            # decimales. En cada paso del orden sale quien queda a una distancia
+                            # relevante de cualquier otro de los que siguen; si salieran todos,
+                            # siguen todos. "empate: <clave de un delta>": en cada par,
+                            # stats.non_superiority_test sobre sus diferencias por unidad, en el
+                            # sentido de su pseudomediana (si es 0, p = 1), frente a ese delta
+                            # (p_above_delta), con Holm al contrastes.alpha_contrastes sobre los
+                            # pares del paso (stats.holm_correction). Un par con menos de 5
+                            # unidades validas en comun no es contrastable: cuenta en Holm con
+                            # p = 1 (contrastes.no_contrastables) y no elimina.
+                            # "empate: <numero>": margen fijo; sale quien queda a mas de el del
+                            # mejor. La familia es la declarada, como en
+                            # contrastes.no_contrastables: un candidato de la lista con menos de
+                            # 5 unidades validas (una unidad es valida si tiene todas las
+                            # metricas del criterio) o sin coste medido, porque no se ejecuto o
+                            # porque fallo, sigue en todos los pasos con p = 1 en sus pares, no
+                            # entra en la restriccion ni en los pasos con un numero, no elimina
+                            # a nadie, no puede quedar elegido y se reporta como desviacion.
+                            # Queda un metodo, varios de una familia (un resultado de esa
+                            # familia) o varios de familias distintas (compromiso compartido);
+                            # si nadie cumple la restriccion, esa tarea no tiene compromiso y se
+                            # reporta asi. La primera ejecucion confirmatoria de una tarea es la
+                            # primera que lee las simulaciones de prueba de
+                            # datos.ids_confirmatorios con cualquier metodo de esa tarea, este o
+                            # no en la lista, para lo que sea: en deteccion, un detector de las
+                            # familias 1 o 3 (para la hipotesis, las ablaciones o el
+                            # compromiso); en diagnostico, un clasificador de las
+                            # familias 2 o 3. stats.best_compromise compara solo con el mejor:
+                            # esta regla la aplica de momento tests/test_decisiones_26_29oct.py.
+                            # Los fallos 3, 9 y 15, aparte y descriptivos; el frente de Pareto
+                            # (stats.pareto_front, sin la FAR y con los delta como tolerancia),
+                            # solo como figura
+  deteccion:                # familias 1 y 3
+    candidatos:             # lista cerrada, una configuracion por metodo: la de la hipotesis
+                            # para PCA, DPCA y el autoencoder; el KPCA, que no esta en ella, con
+                            # la suya. Los cuatro se ajustan y calibran en cada replica de
+                            # particion.rieth.reparto y evaluan su grupo de prueba. La lista
+                            # solo cambia con una adenda con fecha y etiqueta antes de la
+                            # primera ejecucion confirmatoria de deteccion; lo que se ejecute
+                            # fuera de ella se reporta fuera del criterio. El T2 y la regla T2 o
+                            # SPE de PCA y DPCA, solo en la figura
+      - {nombre: pca, familia: 1}   # hipotesis.baselines (el SPE)
+      - {nombre: dpca, familia: 1}  # hipotesis.baselines (el SPE, con 2 retardos)
+      - {nombre: kpca, familia: 1}  # sin codigo todavia. Su configuracion (nucleo RBF, sigma,
+                            # componentes, submuestreo y estadistico, el T2 o el SPE del espacio
+                            # de caracteristicas), o un procedimiento que la elija solo con
+                            # normales de entrenamiento y validacion sin margen de eleccion
+                            # (regla 12), va en una adenda con fecha y etiqueta antes de la
+                            # primera ejecucion confirmatoria de deteccion
+      - {nombre: ae, familia: 3}    # el autoencoder del OE3, el de la hipotesis
+    eliminacion: frente_a_cualquiera_con_holm  # la regla de arriba (2026-11-03)
+    restricciones:
+      - {metrica: far, operador: "<=", valor: 0.015}  # FAR realizada en test_fault00
+                            # (deteccion.ventana_far_normal): la nominal (1 - protocolo.alpha)
+                            # mas contrastes.delta.far
+    orden:
+      - {metrica: exceso_far_gemela, direccion: max, empate: contrastes.delta.fdr}
+                            # por replica, la media en los 17 fallos sin 3, 9 y 15 de la media
+                            # de sus simulaciones validas
+      - {metrica: retardo, direccion: min, empate: contrastes.delta.retardo_muestras}
+                            # por replica, la mediana en los 17 fallos de su mediana del retardo
+                            # en cada fallo (deteccion.mediana_retardo), en muestras de 3
+                            # minutos (protocolo.sample_minutes); si no se alcanza o no existe,
+                            # 800 muestras (el final de la ventana)
+      - {metrica: log10_inferencia_s, direccion: min, empate: 1.0}  # log10 del tiempo de
+                            # inferencia por muestra en linea: infer_time_per_sample_s_median de
+                            # cost.measure_cost con batch_size = 1, una vez por metodo, en la
+                            # maquina de referencia (coste.*). Empatan si el mayor no pasa de 10
+                            # veces el menor (10 veces justas, empate)
+  diagnostico:              # familias 2 y 3
+    candidatos: null        # PENDIENTE (2026-11-03): lista cerrada como la de deteccion, con la
+                            # familia de cada uno: los clasificadores del OE2 bajo el protocolo
+                            # (familia 2) y la red recurrente del OE3 (familia 3), una
+                            # configuracion por metodo. La declaran Jonathan y Cesar en una
+                            # adenda con fecha y etiqueta antes de la primera ejecucion
+                            # confirmatoria de diagnostico
+    eliminacion: frente_a_cualquiera_con_holm  # como en deteccion
+    restricciones: []
+    orden:
+      - {metrica: macro_f1_rest, direccion: max, empate: contrastes.delta.macro_f1}
+                            # macro-F1 sin la normal en los 17 fallos sin 3, 9 y 15
+      - {metrica: log10_inferencia_s, direccion: min, empate: 1.0}  # como en deteccion
 
-coste:                      # (v0.3) PENDIENTE (parrafo 369; tfmfdd.cost.measure_cost)
+coste:                      # (v0.3) PENDIENTE (parrafo 369; tfmfdd.cost.measure_cost). El
+                            # tiempo de inferencia por muestra en linea lo usa compromiso.*
+                            # (2026-11-03), con batch_size = 1: el procedimiento (con que
+                            # replica y que datos se mide; el coste del KPCA depende de su
+                            # submuestreo) se fija antes de medirlo
   maquina_referencia: null
   hilos_blas: null
   hilos_torch: null
   ajuste_incluye: null      # calibracion de limites, parada temprana, busqueda...
-  batch_size: null          # inferencia en linea (1) o por lotes
+  batch_size: null          # inferencia en linea (1) o por lotes, para la tabla de coste;
+                            # compromiso.* usa 1
   n_repeats_fit: null
   n_warmup_fit: null
   n_repeats_infer: null

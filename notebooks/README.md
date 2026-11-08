@@ -43,7 +43,7 @@ La configuración sale del yaml del protocolo, leído con `tfmfdd.config.load_ba
 
 Las claves en null son decisiones pendientes y no se usan como valores. Lo que depende de ellas lo declara la primera celda de código como parámetro, sin tomar la decisión:
 
-- `INCLUIR_NORMAL` (02, B00 y C00): si la clase normal entra en la macro-F1 (`diagnostico.incluir_normal`). Con `None`, el cuaderno da las dos variantes; cuando la clave tenga valor en el yaml, manda el yaml.
+- `INCLUIR_NORMAL` (02, B00 y C00): si la clase normal entra en la macro-F1 (`diagnostico.incluir_normal`). Con `None`, el cuaderno da las dos variantes; cuando la clave tiene valor en el yaml, manda el yaml. Desde el 2026-10-26 vale `false`: los cuadernos dan solo la variante sin la clase normal.
 - `VENTANAS_PRUEBA` (C00): si las ventanas de prueba del diagnóstico pueden empezar antes del inicio del fallo. Aún no tiene clave en el yaml. Con `None`, da las dos opciones.
 - `COSTE_DEMO` (B00 y C00): lote, repeticiones y calentamientos de la medida de coste, de demostración mientras `coste.*` siga en null; cuando esas claves tengan valor, la celda de coste las lee del yaml.
 
