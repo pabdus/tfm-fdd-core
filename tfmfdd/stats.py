@@ -1785,7 +1785,8 @@ def hypothesis_verdict(comparisons, delta: float, alpha: float = 0.05,
        no informa de nada.
     6. Se incluyen fallos de control en los que si se espera deteccion. La
        memoria no dice que pasa si un control falla; esta implementacion lo
-       interpreta asi, a falta de que lo fije el registro de decisiones: un
+       interpreta asi, y el registro de decisiones lo fija el 2026-10-18
+       (hipotesis.fallos_control: fallos 5, 10, 16 y 20, si_falla = sin_apoyo): un
        control se supera si los dos metodos detectan el fallo por encima de su
        FAR, y si alguno falla el veredicto no puede ser "apoya" (un "no hay
        ventaja relevante" de unos metodos que no detectan ni lo detectable no

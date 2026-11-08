@@ -376,10 +376,14 @@ def test_registro_ids_1_a_20_mirados_en_todos(sin_aviso_de_pendientes, split, fa
 
 
 def test_registro_ids_distintos_del_b00_solo_en_entrenamiento(sin_aviso_de_pendientes):
-    """Regla 3: en train_faultKK, de 20*KK + 1 a 20*(KK + 1); no en la prueba."""
+    """Regla 3: en train_faultKK, de 20*KK + 1 a 20*(KK + 1); no en la prueba.
+
+    Desde el 2026-10-21, en la prueba solo estan los del prefijo K = 30 del C00 (punto 5).
+    """
     bloque = np.arange(101, 121)                      # KK = 5
     assert np.isin(bloque, data.seen_runs("train", 5)).all()
-    assert not np.isin(bloque, data.seen_runs("test", 5)).any()
+    en_prueba = set(data.seen_runs("test", 5).tolist()) & set(bloque.tolist())
+    assert en_prueba == set(bloque.tolist()) & set(_prefijo_c00(30))
 
 
 def test_registro_250_y_500_solo_en_los_seis_ficheros(sin_aviso_de_pendientes):
@@ -411,14 +415,61 @@ def test_unseen_de_varios_ficheros_es_la_interseccion(sin_aviso_de_pendientes):
     assert np.array_equal(data.unseen_runs(), todos)
 
 
-def test_registro_pendiente_avisa():
-    """Regla 3, punto 5: los prefijos de los prototipos del C00 no quedaron registrados.
-    Hasta que se confirmen, quien pida ids libres tiene que saberlo."""
-    assert data.RIETH_SEEN_PENDING
+def _prefijo_c00(k: int) -> list[int]:
+    """Los k primeros ids de cada una de las tres listas de split_runs(500, (0.6, 0.2, 0.2), 42)."""
+    listas = data.split_runs(500, fractions=(0.6, 0.2, 0.2), seed=42)
+    return sorted(set().union(*(set(x[:k].tolist()) for x in listas)))
+
+
+def test_registro_pendiente_avisa(monkeypatch):
+    """Si el registro tiene una entrada sin confirmar, quien pida ids libres tiene que saberlo."""
+    monkeypatch.setattr(data, "RIETH_SEEN_PENDING", ("entrada de prueba sin confirmar.",))
     with pytest.warns(UserWarning, match="sin confirmar"):
         data.unseen_runs("test")
     with pytest.warns(UserWarning, match="sin confirmar"):
         data.seen_runs("test")
+
+
+def test_registro_sin_pendientes_desde_el_2026_10_21():
+    """Regla 3, punto 5, cerrado (fila del 2026-10-21): no queda nada sin confirmar y no hay aviso."""
+    import warnings
+    assert data.RIETH_SEEN_PENDING == ()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        data.unseen_runs("test")
+        data.seen_runs("train", 0)
+
+
+def test_registro_prefijo_k30_de_los_prototipos_del_c00():
+    """Fila del 2026-10-21 (acta del 18/10, seccion 15): el prefijo K = 30 de las tres listas, en los 42 ficheros.
+
+    Con el registro cerrado quedan 408 normales libres en train_fault00 (12 replicas
+    de 34, decision 8) y 408 ids libres en la prueba (n = 400 sigue siendo posible).
+    """
+    entradas = [e for e in data.RIETH_SEEN_RUNS if "punto 5" in e.source]
+    assert len(entradas) == 1
+    e = entradas[0]
+    assert set(e.splits) == {"train", "test"} and set(e.faults) == set(range(21))
+    assert list(e.runs) == _prefijo_c00(30) and len(e.runs) == 90 and max(e.runs) == 124
+    assert len(data.unseen_runs("train", 0)) == 408 and len(data.unseen_runs("train", 0)) // 34 == 12
+    assert len(data.unseen_runs("test")) == 408
+
+
+def test_la_version_final_del_c00_uso_prefijos_de_20_como_mucho():
+    """La evidencia del K: results/raw/C00_configuracion.json (27/09; git no versiona results/raw).
+
+    La version final del C00 uso los prefijos 10 (ajuste), 10 (validacion: 4 de
+    parada y 6 de calibracion) y 20 (prueba) de split_runs(500, (0.6, 0.2, 0.2), 42).
+    """
+    import json
+    ruta = RAIZ / "results" / "raw" / "C00_configuracion.json"
+    if not ruta.exists():
+        pytest.skip("falta results/raw/C00_configuracion.json (no se versiona)")
+    c00 = json.loads(ruta.read_text(encoding="utf-8"))["rieth"]
+    ajuste, validacion, prueba = data.split_runs(500, fractions=(0.6, 0.2, 0.2), seed=42)
+    assert c00["ids_fit"] == ajuste[:10].tolist()
+    assert c00["ids_es"] + c00["ids_cal"] == validacion[:10].tolist()
+    assert c00["ids_prueba"] == prueba[:20].tolist()
 
 
 @pytest.mark.parametrize("split, faults", [("Test", None), (None, 21), (None, [0, 21]), (None, "3")])

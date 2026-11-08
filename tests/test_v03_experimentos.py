@@ -248,13 +248,15 @@ def test_baseline_decisiones_pendientes_estan_en_null():
     pendientes = set(config.pending(cfg))
     # Desde el 2026-10-15 (filas de esa fecha en docs/decisiones.md) ya no estan en null
     # contrastes.delta.fdr, contrastes.delta.far, deteccion.ventana_far_normal ni
-    # datos.ids_confirmatorios: las comprueba la prueba siguiente.
+    # datos.ids_confirmatorios, y desde el 2026-10-18 tampoco deteccion.suelo.*,
+    # hipotesis.fallos_control ni particion.rieth.*: las comprueban las pruebas siguientes.
     for clave in ("contrastes.delta.retardo_muestras", "contrastes.delta.macro_f1",
                   "deteccion.falsas_alarmas_por_hora", "diagnostico.incluir_normal",
-                  "deteccion.suelo.margen", "hipotesis.fallos_control", "robustez.niveles_deteccion",
+                  "hipotesis.tabla_ventajas_publicadas", "robustez.niveles_deteccion",
                   "robustez.niveles_diagnostico", "coste.maquina_referencia",
-                  "compromiso.deteccion", "particion.rieth.replicas_ajuste"):
+                  "compromiso.deteccion", "ablaciones.unidad_replica"):
         assert clave in pendientes, clave
+    assert len(pendientes) == 41                   # 56 el 2026-10-15; 15 fijadas del 2026-10-18 al 21
 
 
 def test_baseline_decisiones_del_2026_10_15_tienen_valor():
@@ -279,6 +281,55 @@ def test_baseline_decisiones_del_2026_10_15_tienen_valor():
                   "hipotesis.metrica_ventaja", "hipotesis.mayor_es_mejor",
                   "deteccion.ventana_far_normal", "datos.ids_confirmatorios"):
         assert clave not in pendientes, clave
+
+
+def test_baseline_decisiones_del_2026_10_18_tienen_valor():
+    """Filas del 2026-10-18 a 2026-10-21 de docs/decisiones.md (acta de decisiones del 18/10, secciones 1 a 15)."""
+    cfg = config.load_baseline(BASELINE)
+    assert config.get(cfg, "limites_protocolo") == {
+        "t2_method": "empirical", "spe_method": "empirical", "quantile_method": "linear",
+        "nivel_por_estadistico": "sidak", "orden_escalado_dpca": "escalar_y_retardar"}
+    assert config.get(cfg, "particion.rieth") == {
+        "normales_ajuste": 14, "normales_parada": 4, "normales_calibracion": 20, "replicas_ajuste": 12,
+        "reparto": "subsample_disjunto_y_split_runs"}
+    assert config.get(cfg, "hipotesis.baselines") == [{"nombre": "pca", "estadistico": "spe", "lags": 0},
+                                                      {"nombre": "dpca", "estadistico": "spe", "lags": 2}]
+    secundarios = config.get(cfg, "hipotesis.baselines_secundarios")
+    assert [(b["estadistico"], b["lags"]) for b in secundarios["baselines"]] == [
+        ("t2", 0), ("t2", 2), ("t2_o_spe", 0), ("t2_o_spe", 2)]
+    assert secundarios["holm"] == "por_estadistico"          # fila del 2026-10-25
+    assert config.get(cfg, "contrastes.no_contrastables") == "cuentan_con_p_1"
+    assert config.get(cfg, "hipotesis.fallos_control.fallos") == [5, 10, 16, 20]
+    assert config.get(cfg, "hipotesis.fallos_control.si_falla") == "sin_apoyo"
+    suelo = config.get(cfg, "deteccion.suelo")
+    assert suelo["margen"] == 0.01 == round(1 - config.get(cfg, "protocolo.alpha"), 10)
+    assert suelo["margen_sensibilidad"] == [0.0, 0.005, 0.02]
+    assert suelo["far_emparejada"] == "gemela_normal" and suelo["correccion"] == "ninguna"
+    assert suelo["alpha"] == config.get(cfg, "contrastes.alpha_contrastes")
+    from tfmfdd import stats
+    assert suelo["min_simulaciones"] == stats.MIN_PAIRS == 5
+    pendientes = set(config.pending(cfg))
+    assert not {c for c in pendientes if c.startswith(("limites_protocolo.", "particion.rieth.", "deteccion.suelo."))}
+    assert not pendientes & {"hipotesis.baselines", "hipotesis.fallos_control", "contrastes.no_contrastables"}
+
+
+def test_baseline_fallos_control_salen_de_su_regla():
+    """hipotesis.fallos_control: la regla del yaml, aplicada a la Tabla 4 de Yin (2012), da la lista del yaml.
+
+    Con la misma tabla, los unicos fallos por debajo de fdr_min en PCA y en DPCA son
+    los de la familia (fallos_dificiles: 3, 9 y 15).
+    """
+    cfg = config.load_baseline(BASELINE)
+    fc = config.get(cfg, "hipotesis.fallos_control")
+    regla = fc["regla"]
+    tabla = pd.read_csv(RAIZ / regla["tabla"], comment="#")
+    t4 = tabla[(tabla["tabla"] == regla["tabla_yin"]) & tabla["metodo"].isin(regla["metodos"])]
+    fdr = t4.pivot(index="fallo", columns="metodo", values="valor_num")
+    assert len(fdr) == 21
+    dentro = fdr[(fdr >= regla["fdr_min"]).all(axis=1) & (fdr <= regla["fdr_max"]).all(axis=1)]
+    assert sorted(set(dentro.index) - set(regla["excluidos"])) == fc["fallos"]
+    debajo = fdr[(fdr < regla["fdr_min"]).all(axis=1)]
+    assert sorted(debajo.index) == config.get(cfg, "fallos_dificiles")
 
 
 def test_baseline_no_cambia_ningun_valor_anterior():

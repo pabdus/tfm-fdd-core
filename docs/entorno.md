@@ -26,6 +26,7 @@ Comprobado el 13/10/2026, después de sacar Documentos de la carpeta OneDrive:
 - El mismo `.venv` del repositorio, ya fuera de esa carpeta, carga pandas, scikit-learn, el Parquet de pyarrow y torch 2.14.0+cpu. Confirma que el bloqueo de esas bibliotecas dependía de la ubicación.
 - En el Python global, torch 2.11.0+cu128 también carga. El 11/10 su `c10.dll` estaba bloqueada, así que el veredicto de Windows sobre un mismo fichero puede cambiar con el tiempo: conviene comprobarlo de nuevo antes de fiarse de un entorno.
 - Se volvió a crear el entorno de la opción 2 en `C:\Users\pabdu\venvs\tfm` (Python 3.12.0, `requirements-probado.txt` y el paquete en modo editable, como indica ese fichero), y la suite completa da `643 passed`.
+- **18/10/2026 (decisión D2, `docs/decisiones.md`).** En ese entorno se instaló torch 2.14.0+cpu: solo se añadieron paquetes, ninguna versión de `requirements-probado.txt` cambió, y la suite dio `669 passed` sin ninguna saltada. Las versiones están en `requirements-probado-torch.txt`. Se vio también que el paquete estaba instalado desde el zip de la v0.3 y no en modo editable; se reinstaló con `pip install -e . --no-deps`. El piloto que cuenta y los confirmatorios se calculan en este entorno, en CPU y con `--hilos-torch 4`.
 
 ## Qué significa para el proyecto
 

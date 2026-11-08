@@ -55,8 +55,13 @@ contrastes:                # (v0.3)
                            # en stats.non_superiority_test); la refutacion lleva Holm y el
                            # apoyo exige las seis (hypothesis_verdict). La otra opcion era
                            # bilateral (cada cola al 2,5 %, intervalo al 95 %)
-  no_contrastables: null   # PENDIENTE. Comparaciones sin diferencias no nulas: cuentan
-                           # en Holm con p = 1 (lo implementado) o salen de la familia
+  no_contrastables: cuentan_con_p_1  # (2026-10-18) comparaciones no contrastables (menos
+                           # de 5 simulaciones validas, stats.MIN_PAIRS, o sin datos):
+                           # cuentan en Holm con p = 1, asi que m es el de la familia
+                           # declarada, y nunca apoyan (lo implementado en
+                           # hypothesis_verdict, compare_arms y compare_methods con la
+                           # familia declarada). Rige tambien para las ablaciones y el
+                           # OE2. La otra opcion era sacarlas de la familia
 
 hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); las claves
                            # en null siguen PENDIENTES
@@ -67,11 +72,40 @@ hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); la
                            # fdr_a_far_igualada) quedan como descriptivas
                            # (imp_contrastes, decisiones 1 y 2)
   mayor_es_mejor: true     # (2026-10-15) sentido de la ventaja (higher_is_better)
-  baselines: null          # que son "PCA" y "DPCA" en la familia: estadistico (T2, SPE
-                           # o la regla T2 o SPE), retardos del DPCA y limite (DIS-10)
-  fallos_control: null     # fallos en los que se espera deteccion (parrafo 368), con la
-                           # regla para elegirlos y que pasa si fallan; DIS-15 cita 10,
-                           # 11, 16 y 20 solo como ejemplo
+  baselines:               # (2026-10-18) que son "PCA" y "DPCA" en la familia (DIS-10):
+                           # el SPE, el error de reconstruccion de un autoencoder lineal,
+                           # frente al del autoencoder; el DPCA con 2 retardos (V1, S6).
+                           # Los limites, en limites_protocolo; los componentes, con
+                           # pca.variance. Formato de experiments/P1_piloto_varianza.py
+    - {nombre: pca, estadistico: spe, lags: 0}
+    - {nombre: dpca, estadistico: spe, lags: 2}
+  baselines_secundarios:   # (2026-10-18) analisis secundario declarado: las mismas seis
+                           # comparaciones (autoencoder frente a PCA y DPCA en 3, 9 y 15)
+                           # con estos estadisticos, los mismos contrastes (fila 27) y el
+                           # mismo n, en una tabla aparte del capitulo 4 y FUERA del
+                           # veredicto. Con las mismas ejecuciones sale la descomposicion
+                           # (AE - T2) = (AE - SPE) + (SPE - T2)
+    baselines:
+      - {nombre: pca_t2, estadistico: t2, lags: 0}
+      - {nombre: dpca_t2, estadistico: t2, lags: 2}
+      - {nombre: pca_t2_o_spe, estadistico: t2_o_spe, lags: 0}
+      - {nombre: dpca_t2_o_spe, estadistico: t2_o_spe, lags: 2}
+    holm: por_estadistico  # (2026-10-25) p ajustados por Holm dentro de cada bloque de
+                           # seis comparaciones, uno por estadistico (T2 y regla T2 o SPE),
+                           # como la familia principal; solo para leerlos, no deciden nada.
+                           # La otra opcion era un bloque de doce
+  fallos_control:          # (2026-10-18) fallos en los que se espera deteccion (parrafo
+                           # 368). Regla: FDR de PCA y de DPCA entre el 20 % y el 80 % en la
+                           # Tabla 4 de Yin et al. (2012), sin el 21 (no esta en Rieth); los
+                           # unicos por debajo del 20 % son el 3, el 9 y el 15
+    fallos: [5, 10, 16, 20]
+    regla: {tabla: configs/referencias/yin2012_tablas_transcripcion.csv, tabla_yin: 4,
+            metodos: [PCA, DPCA], fdr_min: 20.0, fdr_max: 80.0, excluidos: [21]}
+    si_falla: sin_apoyo    # un control se supera si el autoencoder y el baseline detectan
+                           # por encima de su FAR (deteccion.suelo); si alguno falla, el
+                           # veredicto no puede ser "apoya"; los controles no entran en
+                           # Holm ni refutan (hypothesis_verdict, punto 6). Son 8 entradas,
+                           # con las mismas simulaciones de prueba y el mismo n
   tabla_ventajas_publicadas: null  # ruta de la tabla de ventajas publicadas, fijada
                            # antes de los experimentos confirmatorios (parrafos 349, 368)
 
@@ -87,13 +121,26 @@ deteccion:                 # (v0.3)
                            # "episodios" (metrics.false_alarm_episodes_per_hour)
   mediana_retardo: null    # PENDIENTE. "condicionada" (delay_samples_median, sobre las
                            # detecciones validas) o "censurada" (delay_samples_median_censored)
-  suelo:                   # PENDIENTE. "Ninguno de los dos detecta el fallo por encima
-                           # de su tasa de falsas alarmas" (parrafo 368):
-                           # metrics.detects_above_far
-    margen: null           # banda: exceso minimo de la FDR sobre la FAR por simulacion
-    far_emparejada: null   # "gemela_normal" (test_fault00, misma ventana) o "prefallo"
-    alpha: null            # alfa de esta comprobacion y si lleva correccion
-    min_simulaciones: null
+  suelo:                   # (2026-10-18 y 2026-10-19) "Ninguno de los dos detecta el fallo
+                           # por encima de su tasa de falsas alarmas" (parrafo 368):
+                           # stats.detects_above_far. Una celda de la familia puede contar
+                           # como apoyo si detecta al menos uno de los dos metodos
+    margen: 0.01           # exceso minimo de la FDR sobre la FAR (pseudomediana de
+                           # fdr - far por simulacion): la FAR nominal, 1 - protocolo.alpha.
+                           # Con ese exceso, la mitad de las alarmas durante el fallo se
+                           # deben al fallo. Fijado sin mirar el piloto
+    margen_sensibilidad: [0.0, 0.005, 0.02]  # el veredicto se reporta tambien con estos
+                           # margenes, en una tabla aparte y fuera del veredicto
+    far_emparejada: gemela_normal  # la FAR de la misma simulacion de test_fault00 en
+                           # deteccion.ventana_far_normal (la de la metrica de la ventaja).
+                           # La otra opcion era "prefallo" (160 muestras, otra ventana)
+    alpha: 0.05            # el de contrastes.alpha_contrastes
+    correccion: ninguna    # el contraste es contra el margen y el suelo es una condicion
+                           # de entrada, no un hallazgo; corregir solo haria mas dificil
+                           # apoyar
+    min_simulaciones: 5    # stats.MIN_PAIRS: el minimo con que un Wilcoxon unilateral
+                           # puede dar p <= 0,05 (1/2^5); el mismo umbral que
+                           # contrastes.no_contrastables
   pr_auc_conjunto: null    # PENDIENTE. Que muestras forman el conjunto de la PR-AUC
                            # (cada simulacion o un pool con test_fault00)
 
@@ -111,12 +158,25 @@ particion:
   calibracion_limites: 0.3  # parte de los datos normales reservada para calibrar. Solo
                             # tiene sentido en el TEP clasico (corte temporal de d00.dat
                             # en A0 y A1); en Rieth se reservan simulaciones (abajo)
-  rieth:                    # (v0.3) PENDIENTE (M15 de rev_trazabilidad). Simulaciones
-                            # normales de entrenamiento por replica de ajuste
-    normales_ajuste: null   # para ajustar el modelo
-    normales_calibracion: null  # para calibrar los limites (otras que las del ajuste)
-    replicas_ajuste: null   # R; con Holm sobre 4 contrastes hace falta R >= 8
-                            # (informe 06, 2.3)
+  rieth:                    # (2026-10-18) simulaciones normales de train_fault00 por
+                            # replica de ajuste (M15 de rev_trazabilidad); los ids, en
+                            # configs/referencias/rieth_ids_prerregistro.csv
+    normales_ajuste: 14     # para ajustar PCA y DPCA; el autoencoder entrena con 10
+    normales_parada: 4      # de las de ajuste, para la parada temprana del autoencoder
+                            # (el reparto del C00, celda 35)
+    normales_calibracion: 20  # para calibrar los limites (otras que las del ajuste):
+                            # desviacion de la FAR realizada claramente menor que 0,5
+                            # puntos (fila 25)
+    replicas_ajuste: 12     # regla: grupos de 34 normales que caben sin solaparse en
+                            # data.unseen_runs("train", 0), con un minimo de 8 (con Holm
+                            # sobre 4 contrastes hace falta R >= 8; informe 06, 2.3). Con
+                            # RIETH_SEEN_PENDING cerrado (2026-10-21) quedan 408 libres
+    reparto: subsample_disjunto_y_split_runs  # (2026-10-18) que normales van a cada
+                            # replica: ablation.subsample_runs(data.unseen_runs("train",
+                            # 0), 34, R, protocolo.semilla, disjoint=True); dentro de cada
+                            # una, data.split_runs(34, (10/34, 4/34, 20/34),
+                            # protocolo.semilla) sobre las posiciones de sus ids ordenados
+                            # (entrenar, parar, calibrar)
 
 datos:
   fuente: classic           # classic | rieth
@@ -126,8 +186,10 @@ datos:
   regla_n:                  # (2026-10-15) numero de simulaciones de prueba confirmatorias
                             # por fallo: regla prerregistrada, no un numero fijo (fila
                             # de esa fecha en docs/decisiones.md)
-    piloto: experiments/P1_piloto_varianza.py  # con las simulaciones 1 a 20, despues de
-                            # la etiqueta y antes de cualquier ejecucion confirmatoria
+    piloto: experiments/P1_piloto_varianza.py  # con las simulaciones de prueba 1 a 20 y
+                            # las normales 1 a 40 de train_fault00 (fila del 2026-10-18 que
+                            # enmienda la 29), despues de la etiqueta y antes de cualquier
+                            # ejecucion confirmatoria
     sigma_ref: max_sigma_upper_95  # maximo, en las seis celdas, de la cota superior
                             # unilateral al 95 % de sigma (columna sigma_upper de P1)
     peldanos:               # el primero cuyo umbral cumpla sigma_ref; el ultimo, sin umbral;
@@ -142,8 +204,9 @@ datos:
     seleccion: ids_mas_altos  # los n ids mas altos de esa lista (n de datos.regla_n),
                             # los mismos en los tres bloques y en todas las clases
     normales_de: unseen_train_fault00  # ajuste y calibracion: data.unseen_runs("train", 0)
-                            # con el reparto de particion.rieth. Antes de la etiqueta se
-                            # cierra RIETH_SEEN_PENDING (prefijos del C00) en el registro
+                            # con el reparto de particion.rieth. RIETH_SEEN_PENDING
+                            # (prefijos del C00) se cerro el 2026-10-21 con el prefijo
+                            # K = 30; los ids, en configs/referencias/rieth_ids_prerregistro.csv
   tramo_copiado: null       # (v0.3) PENDIENTE. Tramo de Rieth que sigue siendo copia de
                             # la gemela tras el inicio nominal: medirlo, declararlo o
                             # descartarlo, igual en los tres bloques (regla 6;
@@ -161,20 +224,23 @@ pca:
                             # normales reservados (regla 3; parrafo 367). in_sample solo
                             # para el brazo en muestra del factor 1 y para Yin
 
-limites_protocolo:          # (v0.3) PENDIENTE. Los valores de pca de arriba son los de
+limites_protocolo:          # (2026-10-18) Los valores de pca de arriba son los de
                             # desarrollo (A0 y A1). Los del resultado en Rieth: "todos
                             # los umbrales se calibraran a la misma FAR nominal con
                             # simulaciones normales reservadas" (parrafo 367; informe
                             # 06, 2.2 y 3.3)
-  t2_method: null
-  spe_method: null
-  quantile_method: null
-  nivel_por_estadistico: null  # nivel de cada limite en la regla T2 o SPE: el mismo de
-                            # protocolo.alpha o Sidak (alpha ** 0.5) para una FAR nominal
-                            # conjunta (DIS-10; PCAMonitor.combined_index)
-  orden_escalado_dpca: null # sin el gancho scaler=, PCAMonitor escala la matriz con
-                            # retardos; con el gancho, escala antes de retardar
-                            # (imp_monitor, decision 7)
+  t2_method: empirical      # cuantil empirico en las normales reservadas (con f, el
+                            # limite sale de la F con el numero de filas del ajuste, sin
+                            # ninguna normal reservada)
+  spe_method: empirical     # idem (box usa las reservadas a traves de una aproximacion)
+  quantile_method: linear   # el de desarrollo y el del umbral del autoencoder del C00
+  nivel_por_estadistico: sidak  # en la regla T2 o SPE, cada limite a alpha ** 0.5
+                            # (0,994987), para una FAR nominal conjunta del 1 % si son
+                            # independientes (DIS-10; PCAMonitor.combined_index)
+  orden_escalado_dpca: escalar_y_retardar  # escalar con las normales de ajuste y despues
+                            # retardar (gancho scaler=); el orden de Yin et al. (2012,
+                            # p. 1570) y de la configuracion principal de V1 (imp_monitor,
+                            # decision 7)
 
 ablaciones:                 # (v0.3) PENDIENTE. Prerregistro de las cuatro ablaciones
                             # sobre Rieth (parrafos 355 y 367; informe 06, 2.1 a 2.4)

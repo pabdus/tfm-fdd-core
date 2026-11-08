@@ -137,19 +137,27 @@ def test_p1_se_niega_con_las_seis_claves_en_null(tmp_path, monkeypatch, capsys):
     assert not (tmp_path / "out").exists()
 
 
-def test_p1_yaml_real_solo_le_faltan_tres_desde_el_2026_10_15(tmp_path, monkeypatch, capsys):
-    """El yaml real fija metrica, sentido y ventana (filas del 2026-10-15); faltan baselines y el reparto."""
-    llamadas = _espiar_cargas(monkeypatch)
-    codigo = P1.ejecutar(["--config", str(BASELINE), "--root", str(tmp_path / "rieth"),
-                          "--out", str(tmp_path / "out")])
-    err = capsys.readouterr().err
-    assert codigo == 2 and "no se ejecuta" in err
-    for clave in ("hipotesis.baselines", "particion.rieth.normales_ajuste",
-                  "particion.rieth.normales_calibracion"):
-        assert clave in err, clave
-    for clave in ("hipotesis.metrica_ventaja", "hipotesis.mayor_es_mejor", "deteccion.ventana_far_normal"):
-        assert clave not in err, clave
-    assert llamadas == []
+def test_p1_yaml_real_trae_todo_lo_que_pide_la_ejecucion_que_cuenta_desde_el_2026_10_18():
+    """Filas del 2026-10-15 y del 2026-10-18: las seis claves, los cinco limites y la parada tienen valor.
+
+    Con el yaml real (sin --provisional), la validacion pasa, los limites salen de
+    limites_protocolo y el reparto de las normales cabe en 1..MAXIMO_NORMALES (commit 2b):
+    14 de ajuste (10 para entrenar y 4 para parar) y 20 de calibracion, en los ids 1 a 34.
+    """
+    cfg = yaml.safe_load(BASELINE.read_text(encoding="utf-8"))
+    decisiones = P1.validar_decisiones(cfg)
+    assert [b["nombre"] for b in decisiones["baselines"]] == ["pca", "dpca"]
+    assert [(b["estadistico"], b["lags"]) for b in decisiones["baselines"]] == [("spe", 0), ("spe", 2)]
+    lim = P1.parametros_limites(cfg, provisional=False)
+    assert lim["fuente"] != "pca_desarrollo"
+    assert {k: lim[k] for k in LIMITES} == LIMITES
+    n_parada, fuente = P1.resolver_normales_parada(cfg, decisiones["normales_ajuste"],
+                                                   decisiones["normales_calibracion"], provisional=False)
+    assert (decisiones["normales_ajuste"], n_parada, decisiones["normales_calibracion"]) == (14, 4, 20)
+    assert fuente == P1.CLAVE_PARADA
+    ids = P1.repartir_normales(14, 20, n_parada=4, semilla=42, maximo=P1.MAXIMO_NORMALES)
+    assert (len(ids["tr"]), len(ids["es"]), len(ids["cal"])) == (10, 4, 20)
+    assert set(ids["ajuste"] + ids["cal"]) == set(range(1, 35))
 
 
 def test_p1_provisional_incompleto_sigue_negandose(tmp_path, monkeypatch, capsys):
@@ -191,13 +199,55 @@ def test_p1_metrica_no_implementada_se_niega(tmp_path, monkeypatch, capsys):
 
 
 def test_p1_mas_normales_que_el_maximo_se_niega(tmp_path, monkeypatch, capsys):
-    """15 + 6 = 21 normales de train_fault00 pasarian del id 20: se niega antes de leer."""
+    """21 + 20 = 41 normales de train_fault00 pasarian del id 40 (MAXIMO_NORMALES): se niega antes de leer."""
     llamadas = _espiar_cargas(monkeypatch)
     prov = _yaml(tmp_path, "muchas.yaml",
-                 {**PROVISIONAL, "particion": {"rieth": {"normales_ajuste": 15, "normales_calibracion": 6}}})
+                 {**PROVISIONAL, "particion": {"rieth": {"normales_ajuste": 21, "normales_calibracion": 20}}})
     codigo = _ejecutar(tmp_path, "--provisional", str(prov))
-    assert codigo == 2 and "runs_desarrollo" in capsys.readouterr().err
+    assert codigo == 2 and "MAXIMO_NORMALES" in capsys.readouterr().err
     assert llamadas == []
+
+
+def test_p1_ejecutar_reparte_y_carga_las_normales_con_maximo_normales(tmp_path, monkeypatch):
+    """Commit 2b en ejecutar: con el yaml real, el reparto y la carga de train_fault00 usan MAXIMO_NORMALES (40).
+
+    La primera carga es la de las normales (ids 1 a 34); la prueba sigue en 1..datos.runs_desarrollo
+    (--n-ids por defecto, 20). La carga se sustituye por un espia que para la ejecucion: no se lee nada.
+    """
+    pytest.importorskip("torch")
+
+    class Alto(Exception):
+        pass
+
+    vistos = {"reparto": [], "cargas": []}
+    original = P1.repartir_normales
+
+    def reparto(n_ajuste, n_cal, n_parada, semilla, maximo):
+        vistos["reparto"].append(maximo)
+        return original(n_ajuste, n_cal, n_parada, semilla, maximo)
+
+    def carga(fallo, split, ids, root, maximo):
+        vistos["cargas"].append((fallo, split, min(ids), max(ids), maximo))
+        raise Alto
+
+    monkeypatch.setattr(P1, "repartir_normales", reparto)
+    monkeypatch.setattr(P1, "cargar_mirados", carga)
+    with pytest.raises(Alto):
+        P1.ejecutar(["--config", str(BASELINE), "--root", str(tmp_path / "rieth"), "--out", str(tmp_path / "out")])
+    assert vistos["reparto"] == [P1.MAXIMO_NORMALES] == [40]
+    assert vistos["cargas"] == [(0, "train", 1, 34, 40)]
+    # la prueba no pasa de datos.runs_desarrollo: --n-ids 21 se niega antes de cargar nada
+    assert P1.ejecutar(["--config", str(BASELINE), "--n-ids", "21", "--root", str(tmp_path / "rieth")]) == 2
+    assert len(vistos["cargas"]) == 1
+
+
+def test_maximo_normales_son_las_40_que_el_registro_da_por_miradas():
+    """Commit 2b: las normales 1 a 40 de train_fault00 estan en el registro por la regla 3, puntos 1 y 2."""
+    assert P1.MAXIMO_NORMALES == 40
+    fuentes = {e.source for e in data.RIETH_SEEN_RUNS
+               if "train" in e.splits and 0 in e.faults and set(e.runs) & set(range(1, 41))}
+    assert any("punto 1" in f for f in fuentes) and any("punto 2" in f for f in fuentes)
+    assert np.isin(np.arange(1, 41), data.seen_runs("train", 0)).all()
 
 
 def test_p1_n_ids_fuera_de_rango_se_niega(tmp_path, monkeypatch, capsys):
@@ -257,10 +307,14 @@ def test_comprobar_ids_mirados_rechaza_mayores_que_el_maximo_y_no_mirados():
     with pytest.raises(ValueError, match="pasan de 20"):
         P1.comprobar_ids_mirados("test", 3, [1, 21], maximo=20)
     with pytest.raises(ValueError, match="no estan en el registro"):
-        P1.comprobar_ids_mirados("test", 3, [22], maximo=500)      # el 22 no esta en RIETH_SEEN_RUNS
+        P1.comprobar_ids_mirados("test", 3, [401], maximo=500)     # el 401 no esta en RIETH_SEEN_RUNS
     with pytest.raises(ValueError, match="enteros >= 1"):
         P1.comprobar_ids_mirados("test", 3, [0, 1], maximo=20)
     assert P1.comprobar_ids_mirados("test", 3, range(20, 0, -1), maximo=20) == list(range(1, 21))
+    # train_fault00 (commit 2b): las 1 a 40, si; la 41, no
+    assert P1.comprobar_ids_mirados("train", 0, range(1, 41), maximo=P1.MAXIMO_NORMALES) == list(range(1, 41))
+    with pytest.raises(ValueError, match="pasan de 40"):
+        P1.comprobar_ids_mirados("train", 0, [40, 41], maximo=P1.MAXIMO_NORMALES)
 
 
 def test_repartir_normales_un_solo_reparto_como_el_c00():
@@ -273,8 +327,18 @@ def test_repartir_normales_un_solo_reparto_como_el_c00():
     tr, es, cal = data.split_runs(20, fractions=(0.5, 0.2, 0.3), seed=42)
     assert (ids["tr"], ids["es"], ids["cal"]) == (tr.tolist(), es.tolist(), cal.tolist())
     assert ids == P1.repartir_normales(14, 6, n_parada=4, semilla=42, maximo=20)   # reproducible
-    with pytest.raises(P1.DecisionPendiente, match="runs_desarrollo"):
+    with pytest.raises(P1.DecisionPendiente, match="pasa de 20"):
         P1.repartir_normales(15, 6, n_parada=4, semilla=42, maximo=20)
+
+
+def test_repartir_normales_con_las_decisiones_del_2026_10_18():
+    """14 (10 + 4) y 20: split_runs(34, (10/34, 4/34, 20/34)) sobre los ids 1 a 34, el reparto de cada replica."""
+    ids = P1.repartir_normales(14, 20, n_parada=4, semilla=42, maximo=P1.MAXIMO_NORMALES)
+    tr, es, cal = data.split_runs(34, fractions=(10 / 34, 4 / 34, 20 / 34), seed=42)
+    assert (ids["tr"], ids["es"], ids["cal"]) == (tr.tolist(), es.tolist(), cal.tolist())
+    assert set(ids["ajuste"] + ids["cal"]) == set(range(1, 35))
+    with pytest.raises(P1.DecisionPendiente, match="MAXIMO_NORMALES"):
+        P1.repartir_normales(21, 20, n_parada=4, semilla=42, maximo=P1.MAXIMO_NORMALES)
     for n_parada in (0, 4):
         with pytest.raises(P1.DecisionPendiente, match="para entrenar y otra para parar"):
             P1.repartir_normales(4, 2, n_parada=n_parada, semilla=42, maximo=20)

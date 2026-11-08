@@ -606,7 +606,8 @@ _CON_FALLO = tuple(range(1, 21))   # 1..20
 #: para calcular algo; leer solo las columnas de ids (conteos) no cuenta, ni
 #: decodificar un fichero para validar un lector sin calcular nada por
 #: simulacion (informe 11 de la revision del 03/10, B.0). Lo que se mire a partir
-#: de ahora se anade aqui, con su fuente. Ultima revision: 11/10/2026.
+#: de ahora se anade aqui, con su fuente. Ultima revision: 21/10/2026 (cierre de
+#: RIETH_SEEN_PENDING con el prefijo K = 30; fila de esa fecha en docs/decisiones.md).
 RIETH_SEEN_RUNS: tuple[SeenRuns, ...] = (
     # Regla 3 (estado del 27/09), punto 1: analisis de datos, verificaciones y
     # cuadernos de arranque. Incluye el piloto de DIS-17 (test_fault00, 01, 02,
@@ -638,18 +639,34 @@ RIETH_SEEN_RUNS: tuple[SeenRuns, ...] = (
     # 01, 03, 06, 09 y 15, en entrenamiento y en prueba.
     SeenRuns(("train", "test"), (0, 1, 3, 6, 9, 15), (250, 500),
              "traspaso v12, 9.7 (informe 11 del 03/10, B.5)"),
+    # Regla 3, punto 5, cerrado el 21/10/2026 (fila de esa fecha en
+    # docs/decisiones.md; acta de decisiones del 18/10, seccion 15). Los
+    # prototipos del C00 tomaron prefijos de tamano no registrado de las tres
+    # listas de split_runs(500, (0.6, 0.2, 0.2), 42), en ficheros sin registrar;
+    # la version final del C00 uso prefijos de 10 (ajuste), 10 (validacion: 4 de
+    # parada y 6 de calibracion) y 20 (prueba) (results/raw/C00_configuracion.json).
+    # Se registra como mirado el prefijo de longitud K = 30 de cada lista (90 ids,
+    # el mayor el 124) en los 42 ficheros. Los ids van escritos aqui, no
+    # calculados al importar, para que el registro no cambie si cambia
+    # split_runs; tests/test_v03_datos.py comprueba que son ese prefijo.
+    SeenRuns(("train", "test"), _TODOS,
+             (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+              21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+              41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+              61, 62, 64, 66, 67, 70, 72, 75, 77, 79, 82, 86, 88, 89, 91, 94, 95, 98, 100, 103,
+              104, 106, 107, 110, 111, 112, 113, 115, 122, 124),
+             "regla 3, punto 5: prototipos del C00, prefijo K = 30 de split_runs(500) (fila del 2026-10-21)"),
 )
 
 #: Entradas del registro PENDIENTES DE CONFIRMAR. No se inventan: hasta que
 #: Pablo las confirme o las descarte en el registro de decisiones, seen_runs y
 #: unseen_runs avisan de que el registro esta incompleto, y sus ids no se
-#: excluyen. Regla 3, punto 5, literal: "Los prototipos del C00 tomaron prefijos
-#: de las mismas listas de split_runs(500) con la semilla del yaml; el tamano
-#: exacto dependia de sus argumentos, que no quedaron registrados".
-RIETH_SEEN_PENDING: tuple[str, ...] = (
-    "Prototipos del C00 (regla 3, punto 5): prefijos de longitud desconocida de las "
-    "listas de split_runs(500) con la semilla del yaml, en ficheros sin registrar.",
-)
+#: excluyen. La unica que hubo, la de la regla 3, punto 5 ("Los prototipos del
+#: C00 tomaron prefijos de las mismas listas de split_runs(500) con la semilla
+#: del yaml; el tamano exacto dependia de sus argumentos, que no quedaron
+#: registrados"), se cerro el 21/10/2026 con el prefijo K = 30 de la ultima
+#: entrada de RIETH_SEEN_RUNS. Si aparece otra, va aqui con su fuente.
+RIETH_SEEN_PENDING: tuple[str, ...] = ()
 
 
 def _ficheros(split: str | None, faults) -> tuple[set[str], set[int]]:

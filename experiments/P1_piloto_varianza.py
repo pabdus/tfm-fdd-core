@@ -14,15 +14,18 @@ regla de n al prerregistro.
 Que hace, con la configuracion de configs/baseline.yaml (`tfmfdd.config`):
 
 1. Reparte las simulaciones normales de train_fault00 (ids 1 a
-   normales_ajuste + normales_calibracion, dentro de 1..datos.runs_desarrollo)
-   UNA sola vez, con `data.split_runs` y la semilla del yaml, en tres bloques:
-   entrenar el autoencoder, pararlo (parada temprana) y calibrar los limites.
-   Las de parada (`particion.rieth.normales_parada`) salen de las de ajuste, y
-   PCA y DPCA se ajustan con todas las de ajuste (entrenar + parar). Es el
-   reparto del C00 (celda 35): con 14 de ajuste, 4 de parada y 6 de
+   normales_ajuste + normales_calibracion, dentro de 1..MAXIMO_NORMALES, las 1
+   a 40) UNA sola vez, con `data.split_runs` y la semilla del yaml, en tres
+   bloques: entrenar el autoencoder, pararlo (parada temprana) y calibrar los
+   limites. Las de parada (`particion.rieth.normales_parada`) salen de las de
+   ajuste, y PCA y DPCA se ajustan con todas las de ajuste (entrenar + parar).
+   Es el reparto del C00 (celda 35): con 14 de ajuste, 4 de parada y 6 de
    calibracion, el mismo split_runs(20, fractions=(0.5, 0.2, 0.3)) y los
    mismos ids (regla 3: la parada usa otro bloque de normales, distinto del de
-   calibracion y de la prueba).
+   calibracion y de la prueba). Con las decisiones del 18/10 (14, 4 y 20) es
+   split_runs(34, (10/34, 4/34, 20/34)) sobre los ids 1 a 34, el mismo reparto
+   que cada replica confirmatoria hace sobre las posiciones de sus ids
+   (particion.rieth.reparto).
 2. Ajusta los baselines de `hipotesis.baselines` (PCAMonitor con los limites
    de `limites_protocolo.*`, `calibration="holdout"`) y el autoencoder del
    cuaderno notebooks/C00_punto_de_partida_deeplearning.ipynb (misma
@@ -54,11 +57,16 @@ el prerregistro con la cota superior que este CSV reporta); no contrasta la
 hipotesis; no da ninguna cifra confirmatoria. Es un piloto sobre simulaciones
 de desarrollo, ya miradas, y sus cifras no se citan como resultado.
 
-Regla de ids (regla 3, DIS-17). Solo lee simulaciones con id entre 1 y
-datos.runs_desarrollo (20) y, ademas, registradas como miradas en
+Regla de ids (regla 3, DIS-17). En los ficheros de prueba solo lee
+simulaciones con id entre 1 y datos.runs_desarrollo (20); en train_fault00,
+entre 1 y MAXIMO_NORMALES (40: las 1 a 20 por la regla 3, punto 1, y las 21 a
+40 porque las cargo la verificacion del 27/09, punto 2; fila del 2026-10-18 de
+docs/decisiones.md, que enmienda la 29, porque 14 + 20 normales no caben en
+20). En los dos casos, ademas, registradas como miradas en
 `data.RIETH_SEEN_RUNS`: cada carga pasa por `comprobar_ids_mirados`, que
 consulta `data.seen_runs(split, fallo)` ANTES de abrir el Parquet y se niega si
 algun id no cumple las dos cosas. Los ids que toco quedan en la procedencia.
+Ninguno es confirmatorio: los confirmatorios salen de data.unseen_runs.
 
 Configuracion y negativa. Como A0, A1 y V1, lee las decisiones del yaml y no
 sustituye ninguna clave en null por un valor por defecto. Necesita estas seis:
@@ -168,8 +176,9 @@ SALIDA = "P1_piloto_varianza.csv"
 SALIDA_RUNS = "P1_piloto_varianza_runs.csv"
 #: Manifiesto de la carpeta de Rieth (nombre, bytes, sha256 por linea).
 MANIFIESTO = "SHA256SUMS.txt"
-#: Limites del resultado (limites_protocolo, PENDIENTE). En null, solo una
-#: ejecucion provisional sigue, con los de desarrollo (pca.*).
+#: Limites del resultado (limites_protocolo, fijados el 2026-10-18). En null
+#: (un yaml anterior), solo una ejecucion provisional sigue, con los de
+#: desarrollo (pca.*).
 CLAVES_LIMITES = (
     "limites_protocolo.t2_method",
     "limites_protocolo.spe_method",
@@ -181,8 +190,13 @@ CLAVES_LIMITES = (
 NIVELES = ("mismo_alpha", "sidak")
 ORDENES_ESCALADO = ("retardar_y_escalar", "escalar_y_retardar")    # los de yin2012.yaml, S5
 #: Normales de train_fault00 que paran el autoencoder (salen de las de ajuste).
-#: La clave no existe todavia en el yaml: se crea cuando se decida su valor.
+#: Existe en el yaml desde el 2026-10-18; un yaml anterior no la tiene.
 CLAVE_PARADA = "particion.rieth.normales_parada"
+#: Ultimo id de train_fault00 que el piloto puede leer (commit 2b; fila del
+#: 2026-10-18 de docs/decisiones.md, que enmienda la 29). Las normales 1 a 40 ya
+#: estan en el registro como miradas (regla 3, puntos 1 y 2); las de prueba
+#: siguen en 1..datos.runs_desarrollo.
+MAXIMO_NORMALES = 40
 #: Raiz del repositorio y carpetas de salida.
 RAIZ = Path(__file__).resolve().parents[1]
 SALIDA_DEFINITIVA = Path("results") / "summary"
@@ -432,8 +446,9 @@ def comprobar_ids_mirados(split: str, fallo: int, ids, maximo: int) -> list[int]
     """Ids que el piloto puede leer de {split}_fault{fallo}: entre 1 y `maximo` y registrados como mirados.
 
     Se llama ANTES de abrir el Parquet. Un id mayor que `maximo` (datos.runs_desarrollo,
-    20) o que no este en `data.seen_runs(split, fallo)` es un error: una simulacion no
-    mirada queda inservible para el resultado confirmatorio en cuanto se lee (regla 3).
+    20, en la prueba; MAXIMO_NORMALES, 40, en train_fault00) o que no este en
+    `data.seen_runs(split, fallo)` es un error: una simulacion no mirada queda
+    inservible para el resultado confirmatorio en cuanto se lee (regla 3).
     """
     ids = sorted({int(i) for i in ids})
     if not ids or ids[0] < 1:
@@ -441,8 +456,8 @@ def comprobar_ids_mirados(split: str, fallo: int, ids, maximo: int) -> list[int]
     altos = [i for i in ids if i > maximo]
     if altos:
         raise ValueError(
-            f"{split}_fault{fallo:02d}: los ids {altos[:10]} pasan de {maximo} (datos.runs_desarrollo). "
-            "El piloto solo lee simulaciones de desarrollo; no se carga nada."
+            f"{split}_fault{fallo:02d}: los ids {altos[:10]} pasan de {maximo}, el ultimo que el piloto puede "
+            "leer en este fichero. El piloto solo lee simulaciones de desarrollo; no se carga nada."
         )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)      # el aviso de RIETH_SEEN_PENDING ya se dio
@@ -474,8 +489,9 @@ def repartir_normales(n_ajuste: int, n_cal: int, n_parada: int, semilla: int, ma
     total = n_ajuste + n_cal
     if total > maximo:
         raise DecisionPendiente(
-            f"normales_ajuste + normales_calibracion = {total} pasa de {maximo} (datos.runs_desarrollo): "
-            "el piloto solo puede tocar las simulaciones 1 a 20 de train_fault00."
+            f"normales_ajuste + normales_calibracion = {total} pasa de {maximo}: el piloto solo puede tocar "
+            f"las normales 1 a {maximo} de train_fault00 (MAXIMO_NORMALES; fila del 2026-10-18 de "
+            "docs/decisiones.md)."
         )
     n_tr = n_ajuste - n_parada
     if n_parada < 1 or n_tr < 1:
@@ -834,7 +850,7 @@ def ejecutar(argv=None) -> int:
         n_parada, fuente_parada = resolver_normales_parada(cfg, decisiones["normales_ajuste"],
                                                            decisiones["normales_calibracion"], provisional)
         ids_normales = repartir_normales(decisiones["normales_ajuste"], decisiones["normales_calibracion"],
-                                         n_parada, config.require(cfg, "protocolo.semilla"), maximo)
+                                         n_parada, config.require(cfg, "protocolo.semilla"), MAXIMO_NORMALES)
         out = carpeta_salida(args.out, provisional)
     except DecisionPendiente as exc:
         print(f"P1 no se ejecuta: {exc}", file=sys.stderr)
@@ -880,11 +896,12 @@ def ejecutar(argv=None) -> int:
             print(f"AVISO: estos Parquet no estan en {MANIFIESTO}: {', '.join(sin_entrada)}.\n")
     data.seen_runs()                       # el aviso de las entradas pendientes del registro, una vez
     print(f"Ids de prueba: {ids_prueba[0]} a {ids_prueba[-1]} de test_fault00 y de test_fault"
-          + ", ".join(f"{f:02d}" for f in fallos) + f" (maximo permitido: {maximo})")
+          + ", ".join(f"{f:02d}" for f in fallos) + f" (maximo permitido: {maximo}; en train_fault00, "
+          f"{MAXIMO_NORMALES})")
     print(f"train_fault00: entrenar {ids_normales['tr']} | parar {ids_normales['es']} | calibrar {ids_normales['cal']}")
 
     contexto = provenance.run_context(__file__)          # git y maquina, antes de escribir nada
-    normales = cargar_mirados(0, "train", ids_normales["ajuste"] + ids_normales["cal"], root, maximo)
+    normales = cargar_mirados(0, "train", ids_normales["ajuste"] + ids_normales["cal"], root, MAXIMO_NORMALES)
     modelos = ajustar_baselines(decisiones, cfg, normales, ids_normales, lim)
     ae = ajustar_autoencoder(cfg, normales, ids_normales, hp, lim["quantile_method"])
     print(f"Autoencoder: {ae['epocas']} epocas (mejor, la {ae['mejor_epoca']}), umbral empirico {ae['umbral']:.3f} "
@@ -908,7 +925,8 @@ def ejecutar(argv=None) -> int:
         "normales_ajuste": decisiones["normales_ajuste"], "normales_calibracion": decisiones["normales_calibracion"],
         "normales_entrenar_ae": len(ids_normales["tr"]), "normales_parar_ae": len(ids_normales["es"]),
         "normales_parada_fuente": fuente_parada,
-        "replicas_ajuste": 1, "n_ids_prueba": n_ids, "max_id": maximo, "faults": fallos,
+        "replicas_ajuste": 1, "n_ids_prueba": n_ids, "max_id": maximo, "max_id_normales": MAXIMO_NORMALES,
+        "faults": fallos,
         "alpha": config.require(cfg, "protocolo.alpha"), "k": config.require(cfg, "protocolo.k_alarmas"),
         "min_fdr": config.require(cfg, "protocolo.min_fdr"),
         "delay_convention": config.require(cfg, "protocolo.retardo_convencion"),
@@ -954,7 +972,8 @@ def ejecutar(argv=None) -> int:
 
     procedencia = dict(
         config=configuracion, config_files=archivos_cfg, script=__file__, **contexto,
-        ids={"fuente": "rieth", "max_id": maximo, "comprobado_con": "data.seen_runs (antes de cada carga)",
+        ids={"fuente": "rieth", "max_id": maximo, "max_id_normales": MAXIMO_NORMALES,
+             "comprobado_con": "data.seen_runs (antes de cada carga)",
              "ajuste": {"fichero": "train_fault00.parquet", "entrenar_ae": ids_normales["tr"],
                         "parar_ae": ids_normales["es"], "ajuste_pca_dpca": ids_normales["ajuste"],
                         "calibracion": ids_normales["cal"]},

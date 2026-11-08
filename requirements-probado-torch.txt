@@ -1,0 +1,32 @@
+# Entorno fijo para lo que usa torch (decision D2, 18/10/2026): las versiones de
+# requirements-probado.txt mas torch 2.14.0+cpu y sus dependencias, tal como quedaron
+# en el entorno virtual de la opcion 2 de docs/entorno.md (venvs\tfm, Python 3.12.0,
+# Windows 11) el 18/10/2026.
+#
+# Leido de pip freeze antes y despues de instalar torch: solo se anadieron torch,
+# filelock, fsspec, mpmath, networkx, setuptools y sympy, y no cambio ninguna version de
+# requirements-probado.txt. typing-extensions, Jinja2 y MarkupSafe (dependencias de torch)
+# ya estaban instaladas en ese entorno; aqui se fijan con la version que tenian.
+# Con ese Python, desde la raiz del repositorio en 35f7955, pasaron las 669 pruebas, sin
+# ninguna saltada.
+#
+# Para reproducir el entorno:
+#   python -m pip install -r requirements-probado-torch.txt
+#   python -m pip install -e . --no-deps
+# La version es la de CPU a proposito: PyTorch no garantiza las mismas cifras en CPU y en
+# GPU con la misma semilla (documentacion de PyTorch, "Reproducibility"). Lo que usa
+# torch corre con --hilos-torch 4.
+
+-r requirements-probado.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+torch==2.14.0+cpu
+filelock==3.32.3
+fsspec==2026.7.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+mpmath==1.3.0
+networkx==3.6.1
+setuptools==78.1.0
+sympy==1.14.0
+typing_extensions==4.16.0

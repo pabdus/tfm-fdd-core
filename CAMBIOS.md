@@ -2,6 +2,28 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
+## Sin publicar (decisiones del 18 al 25 de octubre de 2026)
+
+Decisiones del prerregistro, segunda tanda (filas del 2026-10-18 al 2026-10-25 en `docs/decisiones.md`; acta de decisiones del 18/10, secciones 1 a 16). Con ellas, el piloto P1 ya puede correr sin `--provisional`.
+
+- `configs/baseline.yaml` y su copia `tfmfdd/configs/baseline.yaml`: quince claves fijadas y seis nuevas con valor.
+  - `limites_protocolo`: T² y SPE con el cuantil empírico (`empirical`) en las normales reservadas, percentil `linear`, Sidak en la regla T² o SPE y escalado antes de retardar en el DPCA.
+  - `particion.rieth`: 14 normales de ajuste (10 para entrenar el autoencoder y 4 para pararlo, `normales_parada`, clave nueva), 20 de calibración, 12 réplicas y la regla del reparto (`reparto`, clave nueva).
+  - `hipotesis.baselines`: PCA y DPCA (2 retardos) con el SPE. `hipotesis.baselines_secundarios` (clave nueva): las mismas comparaciones con el T² y con la regla T² o SPE, fuera del veredicto, con Holm dentro de cada bloque de seis (`holm: por_estadistico`, 25/10).
+  - `hipotesis.fallos_control`: 5, 10, 16 y 20, con su regla sobre la Tabla 4 de Yin y qué pasa si fallan.
+  - `contrastes.no_contrastables`: cuentan en Holm con p = 1.
+  - `deteccion.suelo`: FAR de la gemela, margen de 1 punto (con sensibilidad a 0, 0,5 y 2 puntos, `margen_sensibilidad`, clave nueva), alfa 0,05 sin corrección (`correccion`, clave nueva) y 5 simulaciones como mínimo.
+  - Comentarios puestos al día: `datos.regla_n.piloto` (normales 1 a 40) y `datos.ids_confirmatorios.normales_de` (registro cerrado). Quedan 41 claves en null.
+- `tfmfdd/data.py`: el registro de simulaciones miradas da por miradas las 30 primeras de cada lista de `split_runs(500, (0.6, 0.2, 0.2), 42)` en los 42 ficheros (los prototipos del C00, regla 3, punto 5) y `RIETH_SEEN_PENDING` queda vacío: las consultas ya no avisan. Quedan 408 normales libres en `train_fault00` y 408 ids libres en la prueba.
+- `tfmfdd/stats.py`: solo cambia el docstring de `hypothesis_verdict` (punto 6), que ya cita la decisión de los fallos de control.
+- `experiments/P1_piloto_varianza.py` (commit 2b): el piloto puede leer las normales 1 a 40 de `train_fault00` (`MAXIMO_NORMALES`), que el registro ya da por miradas, porque 14 + 20 no caben en 1 a 20; las de prueba siguen en 1 a 20. Enmienda de la fila 29 en `docs/decisiones.md`.
+- `experiments/I0_ids_rieth.py`, nuevo, y `configs/referencias/rieth_ids_prerregistro.csv`, nuevo: los ids de las 12 réplicas (34 normales cada una, con su papel) y los 400 ids de prueba libres de mayor a menor, calculados con las reglas del yaml. No lee ningún Parquet.
+- `requirements-probado-torch.txt`, nuevo: torch 2.14.0+cpu y sus nueve dependencias sobre `requirements-probado.txt` (decisión D2).
+- `docs/reglas_de_medida.md`: el registro de simulaciones miradas, cerrado.
+- Pruebas: `tests/test_i0_ids_rieth.py`, nuevo (el CSV es lo que dan las reglas); en `tests/test_v03_experimentos.py`, las claves que siguen en null, las del 18/10 con su valor y los fallos de control recalculados desde el CSV de Yin; en `tests/test_v03_datos.py`, el registro sin pendientes y el prefijo K = 30; en `tests/test_p1_piloto_varianza.py`, el yaml real completo, `MAXIMO_NORMALES` y el reparto 10, 4 y 20.
+
+**Qué resultados quedan afectados:** ninguno todavía. El piloto P1 corre ahora con las decisiones fijadas, después de la etiqueta, y su CSV se cita con su procedencia. A0, A1 y V1 no leen ninguna de estas claves. **Jonathan y Cesar** tienen que instalar la etiqueta nueva, no la v0.3: el yaml que viaja con la v0.3 es el anterior a estas decisiones.
+
 ## Sin publicar (16 de octubre de 2026)
 
 El piloto de la varianza (P1), que estima con las simulaciones de desarrollo 1 a 20 la sigma de la ventaja del autoencoder frente a PCA y DPCA en los fallos 3, 9 y 15 para la regla de n (fila 29 de `docs/decisiones.md`). No cambia el código de `tfmfdd/`.
