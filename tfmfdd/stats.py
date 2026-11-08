@@ -1799,10 +1799,12 @@ def hypothesis_verdict(comparisons, delta: float, alpha: float = 0.05,
        salida lo dice en 'published_condition' ("no evaluada") y en una linea
        de la explicacion. Si se pasan los resultados de
        published_advantage_test (`published`), se muestran (tabla 'published'
-       y lineas de la explicacion) pero no cambian el veredicto: como se
-       combinan las dos condiciones lo decide el registro de decisiones
-       (hipotesis.tabla_ventajas_publicadas y su regla). Hasta entonces,
-       "apoya" solo dice que se apoya la no superioridad en 3, 9 y 15.
+       y lineas de la explicacion) pero no cambian el veredicto. El registro
+       de decisiones (filas del 2026-10-15 y del 2026-10-26) lo deja asi:
+       la condicion se evalua con la fila comparadora de
+       hipotesis.tabla_ventajas_publicadas (papel_349) y se reporta como
+       informacion, sin tolerancia. "Apoya" solo dice que se apoya la no
+       superioridad en 3, 9 y 15.
     8. La familia y los controles son los declarados. "Se apoya solo si las
        seis la apoyan" y "se incluyen fallos de control" son, para la memoria,
        condiciones de la regla: si la familia recibida no tiene la forma
@@ -2110,8 +2112,9 @@ def hypothesis_verdict(comparisons, delta: float, alpha: float = 0.05,
     # La otra condicion de la prediccion (parrafo 349) no entra en el veredicto (I2).
     razones.append(
         "Condicion 'menor que la publicada' (parrafo 349): no evaluada. Este veredicto "
-        "solo aplica la regla de no superioridad del parrafo 368 en 3, 9 y 15; como se "
-        "combina con la ventaja publicada lo decide el registro de decisiones."
+        "solo aplica la regla de no superioridad del parrafo 368 en 3, 9 y 15; esa "
+        "condicion no entra en el veredicto y se reporta aparte, como informacion "
+        "(filas del 2026-10-15 y del 2026-10-26 de docs/decisiones.md)."
     )
     if publicadas is not None:
         razones.append("Resultados de published_advantage_test que se pasaron (se muestran, "
@@ -2216,10 +2219,10 @@ def published_advantage_test(advantage, published, *, metric: str, alpha: float 
 
     Ojo con "igual": un contraste unilateral no puede probar que dos ventajas
     son iguales. Con esta regla, una ventaja medida igual a la publicada queda
-    "inconclusa" (no apoya la prediccion, pero tampoco la refuta). Si el
-    registro quiere que "igual" refute, hay que anadir una tolerancia
-    alrededor de la cifra publicada: es una decision de la regla, no de este
-    codigo.
+    "inconclusa" (no apoya la prediccion, pero tampoco la refuta). Para que
+    "igual" refutara haria falta una tolerancia alrededor de la cifra
+    publicada; el registro (fila del 2026-10-26) decidio no fijarla y
+    reportar la diferencia con su intervalo, como informacion.
 
     Tambien devuelve la diferencia entre la publicada y la medida, con su
     intervalo, que es la parte de la ventaja publicada que no aparece bajo el
@@ -2256,9 +2259,10 @@ def published_advantage_test(advantage, published, *, metric: str, alpha: float 
     3, 9 y 15 frente a PCA y DPCA) y basta una "igual o mayor" para refutar,
     la refutacion necesita Holm sobre los p_above_published de la familia (como
     hypothesis_verdict con los p_above_delta), y "menor" en todas, la
-    interseccion-union de cada una al nivel alpha. Si entra en el veredicto, y
-    con que familia, lo decide el registro: hypothesis_verdict no la evalua,
-    pero muestra estos resultados si se le pasan (`published`).
+    interseccion-union de cada una al nivel alpha. El registro (filas del
+    2026-10-15 y del 2026-10-26) decidio que no entra en el veredicto: se
+    evalua con la fila comparadora (papel_349) y hypothesis_verdict muestra
+    estos resultados si se le pasan (`published`), sin combinarlos.
 
     Parametros
     ----------

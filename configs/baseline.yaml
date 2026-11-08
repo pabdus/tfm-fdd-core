@@ -106,8 +106,14 @@ hipotesis:                 # familia confirmatoria (parrafos 348, 349 y 368); la
                            # veredicto no puede ser "apoya"; los controles no entran en
                            # Holm ni refutan (hypothesis_verdict, punto 6). Son 8 entradas,
                            # con las mismas simulaciones de prueba y el mismo n
-  tabla_ventajas_publicadas: null  # ruta de la tabla de ventajas publicadas, fijada
-                           # antes de los experimentos confirmatorios (parrafos 349, 368)
+  tabla_ventajas_publicadas: configs/referencias/ventajas_publicadas.csv  # (2026-10-26)
+                           # la tabla de ventajas publicadas, fijada antes de los
+                           # experimentos confirmatorios (parrafos 349 y 368; filas del
+                           # 2026-10-15 y del 2026-10-26). La condicion "menor que la
+                           # publicada" se evalua frente a la fila papel_349 = comparadora
+                           # con stats.published_advantage_test y se reporta como
+                           # informacion (la diferencia con su intervalo): no entra en el
+                           # veredicto. Ver configs/referencias/LEEME_ventajas_publicadas.md
 
 deteccion:                 # (v0.3)
   ventana_far_normal: [160, null]  # (2026-10-15) muestras 161 a 960 de test_fault00,

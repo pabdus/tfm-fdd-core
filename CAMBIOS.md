@@ -2,6 +2,20 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
+## Sin publicar (tabla de ventajas publicadas, 26 de octubre de 2026)
+
+La tabla de ventajas publicadas del prerregistro (filas del 2026-10-15 y del 2026-10-26 en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 1 a 3). Va después del commit de las decisiones del 18 al 25 de octubre. No cambia ningún cálculo: en `tfmfdd/` cambian la copia del yaml y, en `stats.py`, tres pasajes de docstrings y una línea de la explicación que escribe `hypothesis_verdict`; `experiments/` no se toca.
+
+- `configs/referencias/ventajas_publicadas.csv`, nuevo: 72 filas (Diallo et al., 2025, y Golyadkin et al., 2023, en los fallos 3, 9 y 15), generadas por `construir_tabla.py` en `Revisiones_E2/Tabla_Ventajas_Publicadas_2026-10-15/`. La columna `metric` lleva los nombres del paquete en las filas de la misma métrica (`fdr`, `far`, `exceso_far_gemela`) y nombres propios en las de Golyadkin, para que `stats.published_advantage_test` no las contraste. La columna `papel_349` marca la fila comparadora (el autoencoder con KDE frente al PCA con SPE, umbral tradicional, en exceso) y las de sensibilidad.
+- `configs/referencias/ventajas_citadas_no_contrastables.csv`, nuevo: las tres filas de Lomov et al. (2021) que cita el 4.3, con `metric = tpr_clase_clasificador`.
+- `configs/referencias/LEEME_ventajas_publicadas.md`, nuevo: qué filas entran, las columnas, la fila comparadora, las dos FAR del exceso, sin tolerancia, la verificación de Pablo del 15/10 y el texto propuesto para el 4.3.
+- `configs/baseline.yaml` y su copia: `hipotesis.tabla_ventajas_publicadas` con la ruta. Quedan 40 claves en null.
+- `docs/reglas_de_medida.md`: cómo entra la condición de la ventaja publicada (como información, no en el veredicto), que no hay tolerancia, y la lista del prerregistro ya no dice que todo está en null.
+- `tfmfdd/stats.py`, solo textos: el punto 7 del docstring de `hypothesis_verdict`, dos pasajes del de `published_advantage_test` y la línea de la explicación del veredicto sobre el párrafo 349 decían que la regla estaba pendiente; ahora citan las filas del 2026-10-15 y del 2026-10-26.
+- Pruebas: `tests/test_ventajas_publicadas.py`, nuevo (columnas y filas sin repetir, regla de `metric`, fila comparadora y de sensibilidad, coherencia con `hipotesis.baselines`, las cifras de la comparadora en `VERIFICAR`, la nota de las dos FAR, que la función contrasta la comparadora sin tolerancia y que se niega con Golyadkin y Lomov); en `tests/test_v03_experimentos.py`, el recuento de claves pendientes.
+
+**Qué resultados quedan afectados:** ninguno. La tabla se usa en los confirmatorios, que no han corrido.
+
 ## Sin publicar (decisiones del 18 al 25 de octubre de 2026)
 
 Decisiones del prerregistro, segunda tanda (filas del 2026-10-18 al 2026-10-25 en `docs/decisiones.md`; acta de decisiones del 18/10, secciones 1 a 16). Con ellas, el piloto P1 ya puede correr sin `--provisional`.

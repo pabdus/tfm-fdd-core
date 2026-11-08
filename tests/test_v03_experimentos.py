@@ -250,13 +250,15 @@ def test_baseline_decisiones_pendientes_estan_en_null():
     # contrastes.delta.fdr, contrastes.delta.far, deteccion.ventana_far_normal ni
     # datos.ids_confirmatorios, y desde el 2026-10-18 tampoco deteccion.suelo.*,
     # hipotesis.fallos_control ni particion.rieth.*: las comprueban las pruebas siguientes.
+    # Desde el 2026-10-26 tampoco hipotesis.tabla_ventajas_publicadas (tests/test_ventajas_publicadas.py).
     for clave in ("contrastes.delta.retardo_muestras", "contrastes.delta.macro_f1",
                   "deteccion.falsas_alarmas_por_hora", "diagnostico.incluir_normal",
-                  "hipotesis.tabla_ventajas_publicadas", "robustez.niveles_deteccion",
+                  "datos.tramo_copiado", "robustez.niveles_deteccion",
                   "robustez.niveles_diagnostico", "coste.maquina_referencia",
                   "compromiso.deteccion", "ablaciones.unidad_replica"):
         assert clave in pendientes, clave
-    assert len(pendientes) == 41                   # 56 el 2026-10-15; 15 fijadas del 2026-10-18 al 21
+    assert len(pendientes) == 40                   # 56 el 2026-10-15; 15 fijadas del 18 al 21/10; la tabla, el 26/10
+    assert "hipotesis.tabla_ventajas_publicadas" not in pendientes
 
 
 def test_baseline_decisiones_del_2026_10_15_tienen_valor():
