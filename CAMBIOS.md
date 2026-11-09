@@ -2,9 +2,15 @@
 
 Cada versión dice qué cambió y **qué resultados quedan afectados**. Es la norma del paquete común: un cambio se anuncia y se dice qué hay que recalcular. Una cifra calculada con una versión anterior no se cita junto a las de esta sin recalcularla, o sin decir con qué versión salió.
 
-## Sin publicar (adenda de la configuración del KPCA, 4 de noviembre de 2026)
+## v0.4 (9 de noviembre de 2026)
 
-La configuración del KPCA de la lista cerrada de `compromiso.deteccion` (fila del 2026-11-04 de esa configuración en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 17 a 22). Va después del commit de la tercera tanda de decisiones, con su propia etiqueta. No cambia ningún cálculo: en `tfmfdd/` solo cambia la copia del yaml.
+Publica en una sola versión, con la etiqueta `v0.4`, las siete entradas que hasta ahora figuraban como "Sin publicar", incluida la adenda de la configuración del KPCA: la etiqueta de esta versión es la del prerregistro y cubre también esa adenda (acta de decisiones del 26/10, secciones 22 y 23). No cambia ningún cálculo respecto a esas entradas: solo el número de versión (`pyproject.toml` y `tfmfdd/__init__.py`), la instalación del `README.md` y la comprobación de `docs/entorno.md`.
+
+**Qué resultados quedan afectados:** ninguno. Los resultados de desarrollo y la verificación frente a Yin et al. (2012) salieron con la 0.3.0 y su procedencia lo dice; no se recalculan.
+
+### Adenda de la configuración del KPCA (4 de noviembre de 2026)
+
+La configuración del KPCA de la lista cerrada de `compromiso.deteccion` (fila del 2026-11-04 de esa configuración en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 17 a 22). Va después del commit de la tercera tanda de decisiones; la etiqueta de la v0.4 la cubre. No cambia ningún cálculo: en `tfmfdd/` solo cambia la copia del yaml.
 
 - `configs/baseline.yaml` y su copia: el bloque nuevo `kpca`, con valor (núcleo `rbf`; ancho `mediana_d2`, la mediana de las distancias al cuadrado entre las 7.000 muestras de ajuste de la réplica; `ancho_sensibilidad` 520, un brazo fuera del criterio; estadístico `spe`, calculado entero; componentes `pca.variance`; submuestreo `ninguno`; límite `limites_protocolo`), y los comentarios de la entrada `kpca` de la lista y de `coste`. Siguen 30 claves en null.
 - `docs/decisiones.md`: una fila y el recuento, que ya no da la configuración del KPCA por pendiente.
@@ -13,9 +19,9 @@ La configuración del KPCA de la lista cerrada de `compromiso.deteccion` (fila d
 - `docs/reglas_de_medida.md`, regla 13: quedan tres pendientes que no son claves (la unidad del OE2, los brazos del factor 1 en el autoencoder y qué análisis de sensibilidad del Wilcoxon se declara).
 - Pruebas: `tests/test_adenda_kpca_04nov.py`, nuevo (el bloque en los dos yaml, las claves a las que remite, las reglas del ancho, de los componentes y del SPE escritas como referencia para el código que venga, y el formato del registro y del yaml).
 
-**Qué resultados quedan afectados:** ninguno, porque no han corrido ejecuciones confirmatorias y el KPCA no tiene código todavía. Ese código tiene que leer el bloque con `config.require` y no copiar sus valores. Antes de la primera ejecución confirmatoria de detección siguen pendientes el δ del retardo, `coste.*`, confirmar `protocolo.min_fdr` y `protocolo.retardo_convencion`, y la etiqueta que deja fechada esta adenda.
+**Qué resultados quedan afectados:** ninguno, porque no han corrido ejecuciones confirmatorias y el KPCA no tiene código todavía. Ese código tiene que leer el bloque con `config.require` y no copiar sus valores. Antes de la primera ejecución confirmatoria de detección siguen pendientes el δ del retardo, `coste.*` y confirmar `protocolo.min_fdr` y `protocolo.retardo_convencion`.
 
-## Sin publicar (decisiones del 26 de octubre al 4 de noviembre de 2026)
+### Decisiones del 26 de octubre al 4 de noviembre de 2026
 
 Decisiones del prerregistro, tercera tanda (filas del 2026-10-26 al 2026-11-04 en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 4 a 16). Va después del commit de la tabla de ventajas publicadas. No cambia ningún cálculo: en `tfmfdd/` cambian la copia del yaml y seis docstrings.
 
@@ -28,7 +34,7 @@ Decisiones del prerregistro, tercera tanda (filas del 2026-10-26 al 2026-11-04 e
 
 **Qué resultados quedan afectados:** ninguno confirmatorio, porque no han corrido. En los cuadernos 02, B00 y C00, `INCLUIR_NORMAL` pasa a leerse del yaml (`false`), y dan una sola variante de la macro-F1 en lugar de dos.
 
-## Sin publicar (tabla de ventajas publicadas, 26 de octubre de 2026)
+### Tabla de ventajas publicadas (26 de octubre de 2026)
 
 La tabla de ventajas publicadas del prerregistro (filas del 2026-10-15 y del 2026-10-26 en `docs/decisiones.md`; acta de decisiones del 26/10, secciones 1 a 3). Va después del commit de las decisiones del 18 al 25 de octubre. No cambia ningún cálculo: en `tfmfdd/` cambian la copia del yaml y, en `stats.py`, tres pasajes de docstrings y una línea de la explicación que escribe `hypothesis_verdict`; `experiments/` no se toca.
 
@@ -42,7 +48,7 @@ La tabla de ventajas publicadas del prerregistro (filas del 2026-10-15 y del 202
 
 **Qué resultados quedan afectados:** ninguno. La tabla se usa en los confirmatorios, que no han corrido.
 
-## Sin publicar (decisiones del 18 al 25 de octubre de 2026)
+### Decisiones del 18 al 25 de octubre de 2026
 
 Decisiones del prerregistro, segunda tanda (filas del 2026-10-18 al 2026-10-25 en `docs/decisiones.md`; acta de decisiones del 18/10, secciones 1 a 16). Con ellas, el piloto P1 ya puede correr sin `--provisional`.
 
@@ -64,7 +70,7 @@ Decisiones del prerregistro, segunda tanda (filas del 2026-10-18 al 2026-10-25 e
 
 **Qué resultados quedan afectados:** ninguno todavía. El piloto P1 corre ahora con las decisiones fijadas, después de la etiqueta, y su CSV se cita con su procedencia. A0, A1 y V1 no leen ninguna de estas claves. **Jonathan y Cesar** tienen que instalar la etiqueta nueva, no la v0.3: el yaml que viaja con la v0.3 es el anterior a estas decisiones.
 
-## Sin publicar (16 de octubre de 2026)
+### 16 de octubre de 2026
 
 El piloto de la varianza (P1), que estima con las simulaciones de desarrollo 1 a 20 la sigma de la ventaja del autoencoder frente a PCA y DPCA en los fallos 3, 9 y 15 para la regla de n (fila 29 de `docs/decisiones.md`). No cambia el código de `tfmfdd/`.
 
@@ -81,7 +87,7 @@ El piloto de la varianza (P1), que estima con las simulaciones de desarrollo 1 a
 
 **Qué resultados quedan afectados:** ninguno. El piloto no ha corrido todavía con las decisiones fijadas: corre después de la etiqueta del prerregistro, y su CSV se cita con su procedencia. La salida provisional del 15/10 no se versiona.
 
-## Sin publicar (15 de octubre de 2026)
+### 15 de octubre de 2026
 
 Decisiones del prerregistro, primera tanda (filas del 2026-10-15 en `docs/decisiones.md`). No cambia el código de `tfmfdd/` ni el de `experiments/`.
 
@@ -90,7 +96,7 @@ Decisiones del prerregistro, primera tanda (filas del 2026-10-15 en `docs/decisi
 
 **Qué resultados quedan afectados:** ninguno todavía. A0 y A1 (TEP clásico) siguen con la serie entera para la FAR y son de desarrollo. El piloto P1 corre con estas claves en cuanto se fijen `hipotesis.baselines` y `particion.rieth.*`.
 
-## Sin publicar (14 de octubre de 2026)
+### 14 de octubre de 2026
 
 Cierre de la configuración de la verificación frente a Yin et al. (2012). No cambia el código de `tfmfdd/` ni el de `experiments/`.
 

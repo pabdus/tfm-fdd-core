@@ -75,6 +75,6 @@ En este PC se han probado de principio a fin la primera y la segunda. Las demás
 ## Comprobación mínima de un entorno nuevo
 
 1. La línea de importación del apartado "Cómo saber si les pasa a ustedes".
-2. `python -c "import tfmfdd; print(tfmfdd.__version__)"`, que debe dar `0.3.0`.
+2. `python -c "import tfmfdd; print(tfmfdd.__version__)"`, que debe dar `0.4.0`.
 3. `python -m pytest -q` desde la raíz del repositorio, con `TFM_CLASSIC_DIR` y `TFM_RIETH_DIR` definidas, y comparar el resultado con el del `README.md`.
 4. Guardar `tfmfdd.cost.machine_info()` (sistema, CPU, versiones e hilos) junto a los primeros resultados.

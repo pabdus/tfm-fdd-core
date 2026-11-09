@@ -5,7 +5,7 @@ Paquete común `tfmfdd` y bloque de detección del TFM *Detección y diagnóstic
 Máster Universitario en Inteligencia Artificial, UNIR · Director: José Manuel Bernal de Lázaro
 Autor de este repositorio: **Pablo Alberto Duque Marín**
 
-Versión del paquete: **0.3.0** (etiqueta `v0.3`). Qué cambió respecto a la anterior y qué resultados quedan afectados: `CAMBIOS.md`.
+Versión del paquete: **0.4.0** (etiqueta `v0.4`). Qué cambió respecto a la anterior y qué resultados quedan afectados: `CAMBIOS.md`.
 
 ---
 
@@ -23,10 +23,10 @@ El paquete existe para que los tres bloques carguen los datos igual, los partan 
 Para Jonathan y Cesar, que solo necesitan usar el paquete:
 
 ```bash
-pip install git+https://github.com/pabdus/tfm-fdd-core@v0.3
+pip install git+https://github.com/pabdus/tfm-fdd-core@v0.4
 ```
 
-Esa línea vale cuando Pablo publique la etiqueta `v0.3` en GitHub (lo avisará en el grupo); antes de eso, falla. Para comprobar la instalación: `python -c "import tfmfdd; print(tfmfdd.__version__)"` tiene que dar `0.3.0`. Convertir los `.RData` de Rieth pide además el extra `[rieth]` (`pip install "tfmfdd[rieth] @ git+https://github.com/pabdus/tfm-fdd-core@v0.3"`), pero no hace falta: los Parquet se reparten ya convertidos. Fijen siempre una **etiqueta de versión**, no la rama principal: si apuntan a la rama, un cambio en el paquete altera sus resultados en silencio y las tablas de la memoria dejan de ser coherentes entre capítulos.
+Esa línea vale cuando Pablo publique la etiqueta `v0.4` en GitHub (lo avisará en el grupo); antes de eso, falla. Para comprobar la instalación: `python -c "import tfmfdd; print(tfmfdd.__version__)"` tiene que dar `0.4.0`. Convertir los `.RData` de Rieth pide además el extra `[rieth]` (`pip install "tfmfdd[rieth] @ git+https://github.com/pabdus/tfm-fdd-core@v0.4"`), pero no hace falta: los Parquet se reparten ya convertidos. Fijen siempre una **etiqueta de versión**, no la rama principal: si apuntan a la rama, un cambio en el paquete altera sus resultados en silencio y las tablas de la memoria dejan de ser coherentes entre capítulos.
 
 Para trabajar sobre el propio repositorio:
 

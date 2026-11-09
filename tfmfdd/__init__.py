@@ -42,7 +42,7 @@ plots (estilo grafico).
 Autor: Pablo Alberto Duque Marin
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from . import (  # noqa: F401
     ablation,
